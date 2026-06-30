@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>アルゴリズム体験！ロボット誘導ゲーム</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 { color: #333; margin-bottom: 10px; }
+        p { color: #666; margin-top: 0; }
+        .container {
+            display: flex;
+            gap: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        /* マップのスタイル */
+        #map {
+            display: grid;
+            grid-template-columns: repeat(5, 60px);
+            grid-template-rows: repeat(5, 60px);
+            gap: 2px;
+            background-color: #ccc;
+            border: 4px solid #333;
+            border-radius: 4px;
+        }
+        .cell {
+            background-color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            position: relative;
+        }
+        .wall { background-color: #7f8c8d; }
+        .goal { background-color: #ffeaa7; }
+        .robot {
+            font-size: 32px;
+            transition: transform 0.2s ease, top 0.2s ease, left 0.2s ease;
+        }
+        /* コントロールパネル */
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            width: 280px;
+        }
+        .btn-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        button {
+            padding: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-cmd { background-color: #0984e3; color: white; }
+        .btn-cmd:hover { background-color: #74b9ff; }
+        .btn-action { background-color: #2ed573; color: white; font-size: 16px; grid-column: span 2; }
+        .btn-action:hover { background-color: #26af5f; }
+        .btn-clear { background-color: #ff4757; color: white; }
+        .btn-clear:hover { background-color: #ff6b81; }
+        
+        /* 命令リストの表示 */
+        .command-list-container {
+            border: 2px dashed #b2bec3;
+            border-radius: 6px;
+            padding: 10px;
+            min-height: 150px;
+            background-color: #fbfbfb;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .command-item {
+            background-color: #dfe6e9;
+            padding: 6px 10px;
+            margin: 4px 0;
+            border-radius: 4px;
+            font-size: 14px;
+            border-left: 5px solid #0984e3;
+            display: flex;
+            justify-content: space-between;
+        }
+        .active-cmd {
+            background-color: #ffeaa7 !important;
+            border-left-color: #fdcb6e !important;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>アルゴリズム体験！ロボット誘導ゲーム</h1>
+    <p>命令を順番に並べて、ロボット（🤖）を宝箱（🎁）まで導こう！壁（灰色のマス）には入れないよ。</p>
+
+    <div class="container">
+        <div id="map"></div>
+
+        <div class="control-panel">
+            <h3>1. 命令を追加する</h3>
+            <div class="btn-group">
+                <button class="btn-cmd" onclick="addCommand('👉 1歩進む')">1歩進む</button>
+                <button class="btn-cmd" onclick="addCommand('🔄 右を向く')">右を向く</button>
+                <button class="btn-cmd" onclick="addCommand('🔄 左を向く')">左を向く</button>
+                <button class="btn-clear" onclick="clearCommands()">リセット</button>
+            </div>
+
+            <h3>2. 現在の命令リスト（上から実行）</h3>
+            <div class="command-list-container" id="commandList">
+                </div>
+
+            <div class="btn-group" style="margin-top: 15px;">
+                <button class="btn-action" onclick="runProgram()">▶ プログラムを実行！</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 5x5 マップデータ (0:床, 1:壁, 2:ゴール)
+        const mapData = [
+            [0, 0, 0, 0, 0],
+            [1, 1, 0, 1, 0],
+            [0, 0, 0, 1, 0],
+            [0, 1, 1, 1, 0],
+            [0, 0, 0, 0, 2]
+        ];
+
+        // ロボットの初期状態
+        let robot = { x: 0, y: 0, dir: 0 }; // dir: 0=右, 1=下, 2=左, 3=上
+        const dirIcons = ["🤖👉", "🤖👇", "🤖👈", "🤖👆"];
+        
+        // 命令を蓄える配列
+        let commands = [];
+        let isRunning = false;
+
+        // マップの描画
+        function drawMap() {
+            const mapElement = document.getElementById('map');
+            mapElement.innerHTML = '';
+            for (let y = 0; y < 5; y++) {
+                for (let x = 0; x < 5; x++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    if (mapData[y][x] === 1) cell.classList.add('wall');
+                    if (mapData[y][x] === 2) {
+                        cell.classList.add('goal');
+                        cell.innerHTML = '🎁';
+                    }
+                    // ロボットの位置ならロボットを表示
+                    if (robot.x === x && robot.y === y) {
+                        cell.innerHTML = `<span class="robot">${dirIcons[robot.dir]}</span>`;
+                    }
+                    mapElement.appendChild(cell);
+                }
+            }
+        }
+
+        // 命令をリストに追加
+        function addCommand(cmdText) {
+            if (isRunning) return;
+            commands.push(cmdText);
+            updateCommandList();
+        }
+
+        // 命令リストの画面更新
+        function updateCommandList() {
+            const listEl = document.getElementById('commandList');
+            listEl.innerHTML = '';
+            commands.forEach((cmd, index) => {
+                const item = document.createElement('div');
+                item.classList.add('command-item');
+                item.id = `cmd-${index}`;
+                item.innerText = `${index + 1}: ${cmd}`;
+                listEl.appendChild(item);
+            });
+        }
+
+        // 命令のリセット
+        function clearCommands() {
+            if (isRunning) return;
+            commands = [];
+            robot = { x: 0, y: 0, dir: 0 };
+            updateCommandList();
+            drawMap();
+        }
+
+        // プログラムの実行（非同期処理で1秒ずつ動かす）
+        async function runProgram() {
+            if (isRunning || commands.length === 0) return;
+            isRunning = true;
+            
+            // ロボットの位置を初期化
+            robot = { x: 0, y: 0, dir: 0 };
+            drawMap();
+
+            for (let i = 0; i < commands.length; i++) {
+                // ハイライト処理
+                const currentCmdRow = document.getElementById(`cmd-${i}`);
+                if (currentCmdRow) currentCmdRow.classList.add('active-cmd');
+
+                // 1秒待つ
+                await new Promise(resolve => setTimeout(resolve, 800));
+
+                // 命令の解釈
+                const cmd = commands[i];
+                if (cmd.includes('1歩進む')) {
+                    moveForward();
+                } else if (cmd.includes('右を向く')) {
+                    robot.dir = (robot.dir + 1) % 4;
+                } else if (cmd.includes('左を向く')) {
+                    robot.dir = (robot.dir + 3) % 4;
+                }
+
+                drawMap();
+                if (currentCmdRow) currentCmdRow.classList.remove('active-cmd');
+
+                // 判定
+                if (mapData[robot.y][robot.x] === 2) {
+                    alert('🎉 ステージクリア！素晴らしいアルゴリズムです！');
+                    isRunning = false;
+                    return;
+                }
+            }
+
+            // 全命令終了後の判定
+            if (mapData[robot.y][robot.x] !== 2) {
+                alert('😢 ゴールできませんでした。命令を並び替えてみよう！');
+            }
+            isRunning = false;
+        }
+
+        // 1歩進む処理（壁と画面外の判定）
+        function moveForward() {
+            let nextX = robot.x;
+            let nextY = robot.y;
+
+            if (robot.dir === 0) nextX++; // 右
+            if (robot.dir === 1) nextY++; // 下
+            if (robot.dir === 2) nextX--; // 左
+            if (robot.dir === 3) nextY--; // 上
+
+            // マップの範囲内かつ壁（1）ではない場合進む
+            if (nextX >= 0 && nextX < 5 && nextY >= 0 && nextY < 5) {
+                if (mapData[nextY][nextX] !== 1) {
+                    robot.x = nextX;
+                    robot.y = nextY;
+                }
+            }
+        }
+
+        // 初期描画
+        drawMap();
+    </script>
+</body>
+</html>
