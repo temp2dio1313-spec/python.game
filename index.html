@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>アルゴリズム学習シミュレーター（ふわふわアバター版）</title>
+    <title>アルゴリズム学習シミュレーター（チュートリアル版）</title>
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -16,6 +16,91 @@
         }
         h1 { color: #4a5568; margin-bottom: 10px; }
         p { color: #718096; margin-top: 0; }
+        
+        /* チュートリアル・吹き出しエリア */
+        .tutorial-area {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: #ffffff;
+            padding: 15px 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            max-width: 1000px;
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .avatar-box {
+            width: 70px;
+            height: 70px;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .avatar-talk-canvas {
+            width: 70px;
+            height: 70px;
+            animation: float 2s ease-in-out infinite;
+        }
+        .speech-bubble {
+            position: relative;
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 15px 40px 15px 20px;
+            color: #334155;
+            font-size: 15px;
+            font-weight: bold;
+            line-height: 1.6;
+            flex-grow: 1;
+            cursor: pointer;
+            user-select: none;
+            border: 2px solid #cbd5e1;
+            transition: background 0.2s;
+        }
+        .speech-bubble:hover {
+            background: #e2e8f0;
+        }
+        /* 吹き出しの三角突起 */
+        .speech-bubble::before {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: 25px;
+            margin-top: -10px;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            border-right: 10px solid #cbd5e1;
+        }
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 25px;
+            margin-top: -10px;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            border-right: 10px solid #f1f5f9;
+        }
+        .speech-bubble:hover::after {
+            border-right-color: #e2e8f0;
+        }
+        /* ▼送りボタン */
+        .next-indicator {
+            position: absolute;
+            right: 15px;
+            bottom: 10px;
+            font-size: 12px;
+            color: #64748b;
+            animation: pulse 1s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(3px); }
+        }
+
+        /* メインコンテンツエリア */
         .container {
             display: flex;
             gap: 30px;
@@ -24,8 +109,16 @@
             border-radius: 16px;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
             max-width: 1000px;
+            opacity: 0.4; /* チュートリアル中は操作不可に見せる */
+            pointer-events: none; /* クリック不可 */
+            transition: all 0.3s;
         }
-        /* マップのスタイル（パステル調に変更） */
+        .active-game {
+            opacity: 1;
+            pointer-events: auto; /* チュートリアル終了後に解放 */
+        }
+
+        /* マップのスタイル */
         #map {
             display: grid;
             grid-template-columns: repeat(5, 60px);
@@ -55,14 +148,12 @@
             box-sizing: border-box;
         }
         
-        /* アバター描画用のCanvas */
         .avatar-canvas {
             position: absolute;
             top: 0;
             left: 0;
             width: 60px;
             height: 60px;
-            /* ほんのり浮いているような浮遊感を出すCSSアニメーション */
             animation: float 2s ease-in-out infinite;
         }
 
@@ -100,7 +191,6 @@
         .btn-clear { background-color: #f87171; color: white; }
         .btn-clear:hover { background-color: #fca5a5; }
         
-        /* 命令リストの表示 */
         .command-list-container {
             border: 2px dashed #cbd5e1;
             border-radius: 8px;
@@ -123,7 +213,6 @@
             background-color: #fef08a !important;
             border-left-color: #eab308 !important;
         }
-        /* 解説エリアのスタイル */
         .explanation-panel {
             margin-top: 20px;
             background: white;
@@ -134,24 +223,24 @@
             width: 100%;
             box-sizing: border-box;
         }
-        pre {
-            background-color: #1e293b;
-            color: #f1f5f9;
-            padding: 15px;
-            border-radius: 8px;
-            overflow-x: auto;
-            font-family: 'Courier New', Courier, monospace;
-        }
-        .code-keyword { color: #f43f5e; }
-        .code-comment { color: #64748b; }
     </style>
 </head>
 <body>
 
     <h1>アルゴリズム学習シミュレーター</h1>
-    <p>命令を順番に並べて、ふわふわのアバターを目的地（GOAL）まで導くプログラムを作成してください。</p>
+    <p>まずは上のアバターのお話を聞いてみよう！</p>
 
-    <div class="container">
+    <div class="tutorial-area">
+        <div class="avatar-box">
+            <canvas id="talkAvatarCanvas" class="avatar-talk-canvas" width="70" height="70"></canvas>
+        </div>
+        <div class="speech-bubble" id="speechBubble" onclick="nextScript()">
+            <span id="speechText">読み込み中...</span>
+            <span class="next-indicator" id="nextBtn">▼</span>
+        </div>
+    </div>
+
+    <div class="container" id="gameContainer">
         <div id="map"></div>
 
         <div class="control-panel">
@@ -175,13 +264,22 @@
     <div class="explanation-panel">
         <h2>このシステムで学ぶプログラミングの核心</h2>
         <hr>
-        
         <h3>4. ループ処理によるアニメーション</h3>
         <p>アバターが「一定時間ごとに勝手に瞬きをする」という動きや、マスのうえで「常にゆらゆらと浮遊している」動きは、プログラミングの<strong>定期実行（ループ処理）</strong>によって実現しています。JavaScriptの <code>requestAnimationFrame</code> という関数を使い、1秒間に約60回、画面を高速で描き直しています。</p>
-        <p>「今、何フレーム目か」を変数でカウントし、特定の周期が来たら「目を閉じる計算」に切り替えることで、生き物のような自然な瞬きをシミュレートしています。このように、ゲームの滑らかな動きもすべて算術と条件分岐の組み合わせでできています。</p>
     </div>
 
     <script>
+        // セリフの配列データ
+        const scripts = [
+            "こんにちは！ここではPythonっていうプログラミング言語を学んでいくよ",
+            "Pythonっていうのは、本来なら0と1で表されるコンピュータ言語を、人間が分かりやすく、構築しやすいように設計された、英語と記号でできた言語なんだ！",
+            "ifやelse、printなど、聞いたことがあるような英単語で作ることができる言語だから、怖がらずに学んでいこう！",
+            "情報Ⅰで用いるPythonの勉強には、『コマンドを覚える』というよりかは、『流れを意識する』ことが大切になってくるんだ",
+            "そのためにまずは、プログラミングの基本3構造について学んでいこう！",
+            "まずは『順次構造』というものを学んでいくよ！早速だけど、ボタンを命令したい順に押して、ぼくをゴールまで連れてって！"
+        ];
+        let currentScriptIndex = 0;
+
         // 5x5 マップデータ
         const mapData = [
             [0, 0, 0, 0, 0],
@@ -192,21 +290,36 @@
         ];
 
         // アバターの状態
-        let robot = { x: 0, y: 0, dir: 0 }; // 0:右, 1:下, 2:左, 3:上
+        let robot = { x: 0, y: 0, dir: 0 }; 
         let commands = [];
         let isRunning = false;
 
-        // アバターのアニメーション用変数
+        // アニメーション用変数
         let blinkTimer = 0;
         let isBlinking = false;
         let currentCanvas = null;
         let currentCtx = null;
+        let talkCanvas = null;
+        let talkCtx = null;
+
+        // セリフを進める関数
+        function nextScript() {
+            if (currentScriptIndex < scripts.length - 1) {
+                currentScriptIndex++;
+                document.getElementById('speechText').innerText = scripts[currentScriptIndex];
+                
+                // 最後のセリフになったら▼を消してゲームエリアをアクティブにする
+                if (currentScriptIndex === scripts.length - 1) {
+                    document.getElementById('nextBtn').style.display = 'none';
+                    document.getElementById('gameContainer').classList.add('active-game');
+                }
+            }
+        }
 
         // マップの描画
         function drawMap() {
             const mapElement = document.getElementById('map');
             mapElement.innerHTML = '';
-            
             currentCanvas = null;
             currentCtx = null;
 
@@ -219,14 +332,12 @@
                         cell.classList.add('goal');
                         cell.innerText = 'GOAL';
                     }
-                    
                     if (robot.x === x && robot.y === y) {
                         const canvas = document.createElement('canvas');
                         canvas.width = 60;
                         canvas.height = 60;
                         canvas.classList.add('avatar-canvas');
                         cell.appendChild(canvas);
-                        
                         currentCanvas = canvas;
                         currentCtx = canvas.getContext('2d');
                     }
@@ -235,99 +346,85 @@
             }
         }
 
-        // アバターの描画メインループ（ふわふわ質感を再現）
+        // アバター単体をレンダリングする共通関数
+        function drawAvatarSpec(ctx, w, h, dir, blinkFlag) {
+            ctx.clearRect(0, 0, w, h);
+            const cx = w / 2;
+            const cy = h / 2;
+
+            ctx.shadowBlur = 6;
+            ctx.shadowColor = 'rgba(244, 180, 198, 0.4)';
+
+            let bodyGrad = ctx.createRadialGradient(cx - 4, cy - 4, 2, cx, cy, 20);
+            bodyGrad.addColorStop(0, '#ffffff');
+            bodyGrad.addColorStop(0.6, '#fff1f2');
+            bodyGrad.addColorStop(1, '#fecdd3');
+
+            ctx.beginPath();
+            ctx.arc(cx, cy, 20, 0, Math.PI * 2);
+            ctx.fillStyle = bodyGrad;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.fillStyle = 'rgba(fb, 113, 133, 0.35)';
+            ctx.beginPath();
+            ctx.arc(cx - 10, cy + 3, 4, 0, Math.PI * 2);
+            ctx.arc(cx + 10, cy + 3, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#fda4af';
+            let angle = dir * (Math.PI / 2); 
+            let pointerX = cx + Math.cos(angle) * 14;
+            let pointerY = cy + Math.sin(angle) * 14;
+            ctx.beginPath();
+            ctx.arc(pointerX, pointerY, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            let offsetX = Math.cos(angle) * 2;
+            let offsetY = Math.sin(angle) * 2;
+            let eyeLX = cx - 7 + offsetX;
+            let eyeRX = cx + 7 + offsetX;
+            let eyeY = cy - 2 + offsetY;
+
+            ctx.strokeStyle = '#4a5568';
+            ctx.lineWidth = 2.5;
+            ctx.lineCap = 'round';
+
+            if (blinkFlag) {
+                ctx.beginPath();
+                ctx.arc(eyeLX, eyeY + 1, 3, Math.PI, 0, false);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(eyeRX, eyeY + 1, 3, Math.PI, 0, false);
+                ctx.stroke();
+            } else {
+                ctx.fillStyle = '#4a5568';
+                ctx.beginPath();
+                ctx.arc(eyeLX, eyeY, 2.5, 0, Math.PI * 2);
+                ctx.arc(eyeRX, eyeY, 2.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // アニメーション描画ループ
         function updateAnimation() {
             blinkTimer++;
-            
-            if (blinkTimer % 200 < 12) { // 瞬きの間隔をほんの少し調整
-                isBlinking = true;
-            } else {
-                isBlinking = false;
-            }
+            isBlinking = (blinkTimer % 200 < 12);
 
+            // マップ上のアバターを描画
             if (currentCtx && currentCanvas) {
-                const ctx = currentCtx;
-                const w = currentCanvas.width;
-                const h = currentCanvas.height;
-                const cx = w / 2;
-                const cy = h / 2;
-                
-                ctx.clearRect(0, 0, w, h);
-
-                // ふわふわ感を出すためのぼかし影設定
-                ctx.shadowBlur = 6;
-                ctx.shadowColor = 'rgba(244, 180, 198, 0.4)';
-
-                // 1. 体のグラデーション（マシュマロピンク〜ホワイト）
-                let bodyGrad = ctx.createRadialGradient(cx - 4, cy - 4, 2, cx, cy, 20);
-                bodyGrad.addColorStop(0, '#ffffff');
-                bodyGrad.addColorStop(0.6, '#fff1f2');
-                bodyGrad.addColorStop(1, '#fecdd3'); // 淡いパステルピンク
-
-                ctx.beginPath();
-                ctx.arc(cx, cy, 20, 0, Math.PI * 2);
-                ctx.fillStyle = bodyGrad;
-                ctx.fill();
-
-                // 影の設定を一旦リセット（目やチークに影響させないため）
-                ctx.shadowBlur = 0;
-
-                // 2. ほんのりピンクの「チーク（ほっぺ）」
-                ctx.fillStyle = 'rgba(fb, 113, 133, 0.35)';
-                ctx.beginPath();
-                ctx.arc(cx - 10, cy + 3, 4, 0, Math.PI * 2); // 左ほっぺ
-                ctx.arc(cx + 10, cy + 3, 4, 0, Math.PI * 2); // 右ほっぺ
-                ctx.fill();
-
-                // 3. 向きを示すインジケータ（頭の上の小さなふわふわおねむリボン風）
-                ctx.fillStyle = '#fda4af';
-                let angle = robot.dir * (Math.PI / 2); 
-                let pointerX = cx + Math.cos(angle) * 14;
-                let pointerY = cy + Math.sin(angle) * 14;
-                ctx.beginPath();
-                ctx.arc(pointerX, pointerY, 3, 0, Math.PI * 2);
-                ctx.fill();
-
-                // 4. 目の描画（優しいチャコールグレー）
-                let offsetX = Math.cos(angle) * 2;
-                let offsetY = Math.sin(angle) * 2;
-                let eyeLX = cx - 7 + offsetX;
-                let eyeRX = cx + 7 + offsetX;
-                let eyeY = cy - 2 + offsetY;
-
-                ctx.strokeStyle = '#4a5568';
-                ctx.lineWidth = 2.5;
-                ctx.lineCap = 'round';
-
-                if (isBlinking) {
-                    // にっこり閉じた目（弧線に変えてかわいさをアップ）
-                    ctx.beginPath();
-                    ctx.arc(eyeLX, eyeY + 1, 3, Math.PI, 0, false);
-                    ctx.stroke();
-                    ctx.beginPath();
-                    ctx.arc(eyeRX, eyeY + 1, 3, Math.PI, 0, false);
-                    ctx.stroke();
-                } else {
-                    // 通常のまるい目
-                    ctx.fillStyle = '#4a5568';
-                    ctx.beginPath();
-                    ctx.arc(eyeLX, eyeY, 2.5, 0, Math.PI * 2);
-                    ctx.arc(eyeRX, eyeY, 2.5, 0, Math.PI * 2);
-                    ctx.fill();
-                }
+                drawAvatarSpec(currentCtx, currentCanvas.width, currentCanvas.height, robot.dir, isBlinking);
+            }
+            // 吹き出しの横のトーク用アバターを描画（常に前向き：dir=1(下向き)とする）
+            if (talkCtx && talkCanvas) {
+                drawAvatarSpec(talkCtx, talkCanvas.width, talkCanvas.height, 1, isBlinking);
             }
 
             requestAnimationFrame(updateAnimation);
         }
 
-        // 命令を配列に格納
-        function addCommand(cmdText) {
-            if (isRunning) return;
-            commands.push(cmdText);
-            updateCommandList();
-        }
-
-        // 命令配列を画面リストに反映
+        // コマンド操作関連の関数群
+        function addCommand(cmdText) { if (isRunning) return; commands.push(cmdText); updateCommandList(); }
         function updateCommandList() {
             const listEl = document.getElementById('commandList');
             listEl.innerHTML = '';
@@ -339,38 +436,23 @@
                 listEl.appendChild(item);
             });
         }
+        function clearCommands() { if (isRunning) return; commands = []; robot = { x: 0, y: 0, dir: 0 }; updateCommandList(); drawMap(); }
 
-        // リセット
-        function clearCommands() {
-            if (isRunning) return;
-            commands = [];
-            robot = { x: 0, y: 0, dir: 0 };
-            updateCommandList();
-            drawMap();
-        }
-
-        // プログラムの実行
         async function runProgram() {
             if (isRunning || commands.length === 0) return;
             isRunning = true;
-            
             robot = { x: 0, y: 0, dir: 0 };
             drawMap();
 
             for (let i = 0; i < commands.length; i++) {
                 const currentCmdRow = document.getElementById(`cmd-${i}`);
                 if (currentCmdRow) currentCmdRow.classList.add('active-cmd');
-
                 await new Promise(resolve => setTimeout(resolve, 800));
 
                 const cmd = commands[i];
-                if (cmd === '直進') {
-                    moveForward();
-                } else if (cmd === '右回転') {
-                    robot.dir = (robot.dir + 1) % 4;
-                } else if (cmd === '左回転') {
-                    robot.dir = (robot.dir + 3) % 4;
-                }
+                if (cmd === '直進') moveForward();
+                else if (cmd === '右回転') robot.dir = (robot.dir + 1) % 4;
+                else if (cmd === '左回転') robot.dir = (robot.dir + 3) % 4;
 
                 drawMap();
                 if (currentCmdRow) currentCmdRow.classList.remove('active-cmd');
@@ -381,32 +463,26 @@
                     return;
                 }
             }
-
-            if (mapData[robot.y][robot.x] !== 2) {
-                alert('失敗：目的地に到達できませんでした。命令の順番を見直してください。');
-            }
+            if (mapData[robot.y][robot.x] !== 2) alert('失敗：目的地に到達できませんでした。命令の順番を見直してください。');
             isRunning = false;
         }
 
-        // 前進処理
         function moveForward() {
-            let nextX = robot.x;
-            let nextY = robot.y;
-
+            let nextX = robot.x, nextY = robot.y;
             if (robot.dir === 0) nextX++;
             if (robot.dir === 1) nextY++;
             if (robot.dir === 2) nextX--;
             if (robot.dir === 3) nextY--;
-
             if (nextX >= 0 && nextX < 5 && nextY >= 0 && nextY < 5) {
-                if (mapData[nextY][nextX] !== 1) {
-                    robot.x = nextX;
-                    robot.y = nextY;
-                }
+                if (mapData[nextY][nextX] !== 1) { robot.x = nextX; robot.y = nextY; }
             }
         }
 
-        // 初回起動処理
+        // 初期化処理
+        document.getElementById('speechText').innerText = scripts[0];
+        talkCanvas = document.getElementById('talkAvatarCanvas');
+        talkCtx = talkCanvas.getContext('2d');
+        
         drawMap();
         updateAnimation();
     </script>
