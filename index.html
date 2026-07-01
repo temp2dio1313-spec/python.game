@@ -128,10 +128,15 @@
         .box-red { background: #ef4444; border: 3px solid #b91c1c; }
         .box-blue { background: #3b82f6; border: 3px solid #1d4ed8; }
         
+        /* カウンター表示用スタイル */
+        .count-badge {
+            position: absolute; top: 15px; right: 15px; background: #475569; color: white;
+            padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold;
+        }
+
         .avatar-canvas {
             position: absolute; width: 60px; height: 60px; animation: float 2s ease-in-out infinite;
         }
-        .avatar-conveyor-pos { top: 90px; left: 128px; }
 
         @keyframes float {
             0% { transform: translateY(0px); }
@@ -182,6 +187,7 @@
 
         <div id="stage2View" class="stage-view">
             <div id="conveyorArea">
+                <div class="count-badge" id="ballCounter">残り: 10個</div>
                 <canvas id="conveyorCanvas" width="316" height="316" style="position:absolute; top:0; left:0; z-index:1;"></canvas>
                 <div class="conveyor-belt" style="top: -40px;">CONVEYOR</div>
                 <div class="box-container">
@@ -193,8 +199,7 @@
 
         <div class="control-panel">
             <h3>1. 命令の追加</h3>
-            <div class="btn-group" id="commandButtonGroup">
-                </div>
+            <div class="btn-group" id="commandButtonGroup"></div>
 
             <h3>2. 命令リスト</h3>
             <div class="command-list-container" id="commandList"></div>
@@ -223,12 +228,12 @@
 
         const stage2StartScripts = [
             "次は『分岐構造』について学んでいくよ！",
-            "ベルトコンベアから、赤い球と青い球がランダムに運ばれてくるんだ。",
+            "ベルトコンベアから、赤い球と青い球が【ランダムに10個】連続で運ばれてくるんだ。",
             "アバターに条件判断の命令を組み合わせて、「もし赤い球なら左の箱」「青い球なら右の箱」へ正しく仕分けさせてみてね！"
         ];
 
         const stage2ClearScripts = [
-            "すごい！全部きれいに仕分けられたね！",
+            "すごい！10個すべての球をきれいに仕分けられたね！",
             "「もし〜ならA、そうでなければB」という風に、条件によって進むルートを変える仕組みを『分岐構造（条件分岐）』というんだ！",
             "Pythonではこれを「if文」を使って表現するよ。これで流れの基本はバッチリだね！"
         ];
@@ -241,10 +246,10 @@
         const mapData = [[0,0,0,0,0],[1,1,0,1,0],[0,0,0,1,0],[0,1,1,1,0],[0,0,0,0,2]];
         let robot = { x: 0, y: 0, dir: 0 }; 
 
-        // ステージ2用データ
-        let currentBallColor = "red"; // "red" または "blue"
+        // ステージ2用：10個のボール処理関連データ
+        let currentBallColor = "red"; 
         let ballY = 0; 
-        let isBallMoving = false;
+        let remainingBalls = 10;
 
         let commands = [];
         let isRunning = false;
@@ -255,7 +260,6 @@
         let talkCtx = null, talkCanvas = null;
         let conveyorCtx = null, conveyorCanvas = null;
 
-        // セリフクリック制御
         function handleSpeechClick() {
             if (currentStage === 1 && currentMode === "start") {
                 if (currentScriptIndex < startScripts.length - 1) {
@@ -268,7 +272,6 @@
                     currentScriptIndex++;
                     setSpeech(stage1ClearScripts[currentScriptIndex]);
                 } else {
-                    // ステージ2へ移行
                     transitionToStage2();
                 }
             } else if (currentStage === 2 && currentMode === "start") {
@@ -297,11 +300,8 @@
             document.getElementById('nextBtn').style.display = 'inline';
         }
 
-        // ステージ2への切り替え設定
         function transitionToStage2() {
-            currentStage = 2;
-            currentMode = "start";
-            currentScriptIndex = 0;
+            currentStage = 2; currentMode = "start"; currentScriptIndex = 0;
             document.getElementById('mainTitle').innerText = "アルゴリズム学習シミュレーター（分岐構造）";
             document.getElementById('stage1View').classList.remove('active-view');
             document.getElementById('stage2View').classList.add('active-view');
@@ -309,18 +309,20 @@
             setSpeech(stage2StartScripts[0]);
             lockGame();
             initControlPanel();
+            remainingBalls = 10;
+            updateCounterDisplay();
             resetStage2Ball();
         }
 
         function resetStage2Ball() {
             currentBallColor = Math.random() > 0.5 ? "red" : "blue";
             ballY = 30;
-            isBallMoving = false;
-            commands = [];
-            updateCommandList();
         }
 
-        // 操作ボタンの動的生成
+        function updateCounterDisplay() {
+            document.getElementById('ballCounter').innerText = `残り: ${remainingBalls}個`;
+        }
+
         function initControlPanel() {
             const group = document.getElementById('commandButtonGroup');
             group.innerHTML = '';
@@ -340,7 +342,6 @@
             }
         }
 
-        // マップ描画 (Stage 1)
         function drawMap() {
             if (currentStage !== 1) return;
             const mapElement = document.getElementById('map');
@@ -365,7 +366,6 @@
             }
         }
 
-        // アバターベース描画関数
         function drawAvatarSpec(ctx, w, h, dir, blinkFlag) {
             ctx.clearRect(0, 0, w, h);
             const cx = w / 2, cy = h / 2;
@@ -394,7 +394,6 @@
             }
         }
 
-        // ループアニメーション
         function updateAnimation() {
             blinkTimer++;
             isBlinking = (blinkTimer % 200 < 12);
@@ -406,21 +405,16 @@
                 drawAvatarSpec(talkCtx, talkCanvas.width, talkCanvas.height, 1, isBlinking);
             }
 
-            // ステージ2：コンベアと球、据え置きアバターの描画
             if (currentStage === 2 && conveyorCtx && conveyorCanvas) {
                 const ctx = conveyorCtx;
                 ctx.clearRect(0, 0, 316, 316);
 
-                // 中央固定アバターの描画
-                ctx.save();
-                ctx.translate(128, 90);
-                drawAvatarSpec(ctx, 60, 60, 1, isBlinking); // 下向き固定
+                ctx.save(); ctx.translate(128, 90);
+                drawAvatarSpec(ctx, 60, 60, 1, isBlinking);
                 ctx.restore();
 
-                // 球の移動シミュレーション描画
-                if (isBallMoving || isRunning) {
-                    ctx.beginPath();
-                    ctx.arc(158, ballY, 12, 0, Math.PI * 2);
+                if (isRunning && remainingBalls > 0) {
+                    ctx.beginPath(); ctx.arc(158, ballY, 12, 0, Math.PI * 2);
                     ctx.fillStyle = currentBallColor === "red" ? "#ef4444" : "#3b82f6";
                     ctx.fill();
                 }
@@ -442,11 +436,11 @@
         function clearCommands() { 
             if (isRunning) return; 
             if (currentStage === 1) { robot = { x: 0, y: 0, dir: 0 }; drawMap(); } 
-            else { resetStage2Ball(); }
+            else { remainingBalls = 10; updateCounterDisplay(); resetStage2Ball(); }
             commands = []; updateCommandList(); 
         }
 
-        // 実行メインコア
+        // プログラム実行
         async function runProgram() {
             if (isRunning || commands.length === 0) return;
             isRunning = true;
@@ -469,63 +463,69 @@
                 if (mapData[robot.y][robot.x] !== 2) alert('失敗：目的地に到達できませんでした。');
                 isRunning = false;
             } else {
-                // ステージ2：分岐構造の実行シミュレーション
-                ballY = 30; 
-                isBallMoving = true;
+                // ステージ2：球を10回連続で流すループ
+                remainingBalls = 10;
+                updateCounterDisplay();
 
-                // 1. 球がアバターの前に流れてくるアニメーション
-                while(ballY < 110) {
-                    ballY += 4;
-                    await new Promise(r => requestAnimationFrame(r));
-                }
-
-                let isCleared = false;
-                // 2. 命令リストの判定条件チェック
-                for(let i=0; i<commands.length; i++) {
-                    const row = document.getElementById(`cmd-${i}`);
-                    if (row) row.classList.add('active-cmd');
-                    await new Promise(r => setTimeout(r, 600));
-
-                    const cmd = commands[i];
-                    if (cmd.includes('もし赤い球なら') && currentBallColor === "red") {
-                        // 赤い球を左の箱へ飛ばすアニメーション
-                        let ballX = 158;
-                        while(ballX > 65 || ballY < 240) {
-                            if(ballX > 65) ballX -= 5;
-                            if(ballY < 240) ballY += 7;
-                            conveyorCtx.clearRect(0,0,316,316);
-                            conveyorCtx.save(); conveyorCtx.translate(128, 90); drawAvatarSpec(conveyorCtx, 60, 60, 1, isBlinking); conveyorCtx.restore();
-                            conveyorCtx.beginPath(); conveyorCtx.arc(ballX, ballY, 12, 0, Math.PI*2); conveyorCtx.fillStyle = "#ef4444"; conveyorCtx.fill();
-                            await new Promise(r => requestAnimationFrame(r));
-                        }
-                        isCleared = true;
-                    } else if (cmd.includes('それ以外') && currentBallColor === "blue") {
-                        // 青い球を右の箱へ飛ばすアニメーション
-                        let ballX = 158;
-                        while(ballX < 250 || ballY < 240) {
-                            if(ballX < 250) ballX += 5;
-                            if(ballY < 240) ballY += 7;
-                            conveyorCtx.clearRect(0,0,316,316);
-                            conveyorCtx.save(); conveyorCtx.translate(128, 90); drawAvatarSpec(conveyorCtx, 60, 60, 1, isBlinking); conveyorCtx.restore();
-                            conveyorCtx.beginPath(); conveyorCtx.arc(ballX, ballY, 12, 0, Math.PI*2); conveyorCtx.fillStyle = "#3b82f6"; conveyorCtx.fill();
-                            await new Promise(r => requestAnimationFrame(r));
-                        }
-                        isCleared = true;
-                    }
-                    if (row) row.classList.remove('active-cmd');
-                    if (isCleared) break;
-                }
-
-                if (isCleared) {
-                    isRunning = false;
-                    triggerClear2();
-                } else {
-                    // 間違った箱に落ちるか通り過ぎる
-                    while(ballY < 300) { ballY += 6; await new Promise(r => requestAnimationFrame(r)); }
-                    alert('仕分け失敗：球の色と、命令ブロックの条件が一致していません！');
-                    isRunning = false;
+                while (remainingBalls > 0) {
                     resetStage2Ball();
+                    
+                    // 1. 球がアバターの前に流れてくる
+                    while(ballY < 110) {
+                        ballY += 5;
+                        await new Promise(r => requestAnimationFrame(r));
+                    }
+
+                    let isSorted = false;
+                    // 2. 組まれた命令ブロックを一通り走査して判定
+                    for(let i=0; i<commands.length; i++) {
+                        const row = document.getElementById(`cmd-${i}`);
+                        if (row) row.classList.add('active-cmd');
+                        await new Promise(r => setTimeout(r, 300)); // ループ用に少しディレイを高速化
+
+                        const cmd = commands[i];
+                        if (cmd.includes('もし赤い球なら') && currentBallColor === "red") {
+                            let ballX = 158;
+                            while(ballX > 65 || ballY < 240) {
+                                if(ballX > 65) ballX -= 6; if(ballY < 240) ballY += 8;
+                                conveyorCtx.clearRect(0,0,316,316);
+                                conveyorCtx.save(); conveyorCtx.translate(128, 90); drawAvatarSpec(conveyorCtx, 60, 60, 1, isBlinking); conveyorCtx.restore();
+                                conveyorCtx.beginPath(); conveyorCtx.arc(ballX, ballY, 12, 0, Math.PI*2); conveyorCtx.fillStyle = "#ef4444"; conveyorCtx.fill();
+                                await new Promise(r => requestAnimationFrame(r));
+                            }
+                            isSorted = true;
+                        } else if (cmd.includes('それ以外') && currentBallColor === "blue") {
+                            let ballX = 158;
+                            while(ballX < 250 || ballY < 240) {
+                                if(ballX < 250) ballX += 6; if(ballY < 240) ballY += 8;
+                                conveyorCtx.clearRect(0,0,316,316);
+                                conveyorCtx.save(); conveyorCtx.translate(128, 90); drawAvatarSpec(conveyorCtx, 60, 60, 1, isBlinking); conveyorCtx.restore();
+                                conveyorCtx.beginPath(); conveyorCtx.arc(ballX, ballY, 12, 0, Math.PI*2); conveyorCtx.fillStyle = "#3b82f6"; conveyorCtx.fill();
+                                await new Promise(r => requestAnimationFrame(r));
+                            }
+                            isSorted = true;
+                        }
+                        if (row) row.classList.remove('active-cmd');
+                        if (isSorted) break;
+                    }
+
+                    // 間違った組み合わせ、またはスルーした場合のペナルティ落下の挙動
+                    if (!isSorted) {
+                        while(ballY < 300) { ballY += 8; await new Promise(r => requestAnimationFrame(r)); }
+                        alert('仕分け失敗：球の色に合う条件命令がリストにありませんでした。最初からやり直しです！');
+                        isRunning = false;
+                        resetStage2Ball();
+                        return;
+                    }
+
+                    remainingBalls--;
+                    updateCounterDisplay();
+                    await new Promise(r => setTimeout(r, 400)); // 球と球の間のインターバル
                 }
+
+                // 10個すべてノーミスで仕分け終えたらクリア
+                isRunning = false;
+                triggerClear2();
             }
         }
 
@@ -537,19 +537,10 @@
             }
         }
 
-        // ステージ1クリア設定
-        function triggerClear1() {
-            lockGame(); currentMode = "clear"; currentScriptIndex = 0;
-            setSpeech(stage1ClearScripts[0]);
-        }
+        function triggerClear1() { lockGame(); currentMode = "clear"; currentScriptIndex = 0; setSpeech(stage1ClearScripts[0]); }
+        function triggerClear2() { lockGame(); currentMode = "clear"; currentScriptIndex = 0; setSpeech(stage2ClearScripts[0]); }
 
-        // ステージ2クリア設定
-        function triggerClear2() {
-            lockGame(); currentMode = "clear"; currentScriptIndex = 0;
-            setSpeech(stage2ClearScripts[0]);
-        }
-
-        // 初期化ロード
+        // 初期設定
         document.getElementById('speechText').innerText = startScripts[0];
         talkCanvas = document.getElementById('talkAvatarCanvas'); talkCtx = talkCanvas.getContext('2d');
         conveyorCanvas = document.getElementById('conveyorCanvas'); conveyorCtx = conveyorCanvas.getContext('2d');
