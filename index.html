@@ -200,7 +200,7 @@
         // シナリオスクリプト
         const startScripts = [
             "こんにちは！ここではPythonっていうプログラミング言語を学んでいくよ",
-            "Pythonっていうのは、本来なら0と1で表されるコンピュータ言語を、人間が分かりやすく、構築しやすいように設計された、英語と記号でできた言語んだ！",
+            "Pythonっていうのは、本来なら0と1で表されるコンピュータ言語を、人間が分かりやすく、構築しやすいように設計された、英語と記号でできた言語なんだ！",
             "ifやelse、printなど、聞いたことがあるような英単語で作ることができる言語だから、怖がらずに学んでいこう！",
             "情報Ⅰで用いるPythonの勉強には、『コマンドを覚える』というよりかは、『流れを意識する』ことが大切になってくるんだ",
             "そのためにまずは、プログラミングの基本3構造について学んでいこう！",
@@ -211,7 +211,7 @@
             "今みたいに、上から順番に命令を1つずつ実行していく構造のことを、『順次構造』というんだ！それじゃ次に行ってみよう！"
         ];
         const stage2StartScripts = [
-            "次は『分岐構造』について学んでいくよ！",
+            "次は『分岐構造』について学んでしていくよ！",
             "ベルトコンベアから、赤い球と青い球がランダムに10個連続で運ばれてくるんだ。",
             "今回は「条件パーツ」と「行動パーツ」に分かれているよ！うまく組み合わせて「もし赤い球なら左に」「もし青い球なら右に」仕分けをしてね！"
         ];
@@ -238,8 +238,11 @@
         const mapData = [[0,0,0,0,0],[1,1,0,1,0],[0,0,0,1,0],[0,1,1,1,0],[0,0,0,0,2]];
         let robot = { x: 0, y: 0, dir: 0 }; 
 
-        // ステージ2用
-        let currentBallColor = "red"; let ballY = 0; let remainingBalls = 10;
+        // ステージ2用：アニメーションバグ防止のために位置を完全に独立管理
+        let currentBallColor = "red"; 
+        let ballX = 158;
+        let ballY = 30; 
+        let remainingBalls = 10;
 
         // ステージ3用
         let createdWordCount = 0; let textBuffer = "";
@@ -295,7 +298,11 @@
             initControlPanel();
         }
 
-        function resetStage2Ball() { currentBallColor = Math.random() > 0.5 ? "red" : "blue"; ballY = 30; }
+        function resetStage2Ball() { 
+            currentBallColor = Math.random() > 0.5 ? "red" : "blue"; 
+            ballX = 158;
+            ballY = 30; 
+        }
 
         function initControlPanel() {
             const group = document.getElementById('commandButtonGroup'); group.innerHTML = '';
@@ -369,8 +376,10 @@
             
             if (currentStage === 2 && conveyorCtx && conveyorCanvas) {
                 conveyorCtx.clearRect(0, 0, 316, 316); conveyorCtx.save(); conveyorCtx.translate(128, 90); drawAvatarSpec(conveyorCtx, 60, 60, 1, isBlinking); conveyorCtx.restore();
+                
+                // 実行中かつ残りの球があるときだけ球をリアルタイムに強制描写
                 if (isRunning && remainingBalls > 0) {
-                    conveyorCtx.beginPath(); conveyorCtx.arc(158, ballY, 12, 0, Math.PI * 2); conveyorCtx.fillStyle = currentBallColor === "red" ? "#ef4444" : "#3b82f6"; conveyorCtx.fill();
+                    conveyorCtx.beginPath(); conveyorCtx.arc(ballX, ballY, 12, 0, Math.PI * 2); conveyorCtx.fillStyle = currentBallColor === "red" ? "#ef4444" : "#3b82f6"; conveyorCtx.fill();
                 }
             }
             if (currentStage === 3 && factoryCtx && factoryCanvas) {
@@ -381,7 +390,6 @@
 
         function addCommand(cmdText) { if (isRunning) return; commands.push(cmdText); updateCommandList(); }
         
-        // 命令リストの描画（行動パーツ右ズレ対応）
         function updateCommandList() {
             const listEl = document.getElementById('commandList'); listEl.innerHTML = '';
             commands.forEach((cmd, index) => {
@@ -390,11 +398,9 @@
                 item.id = `cmd-${index}`; 
                 item.innerText = `${index + 1}: ${cmd}`;
                 
-                // ★ステージ2かつ、行動パーツ（左に入れる / 右に入れる）の場合に右へずらすクラスを適用
                 if (currentStage === 2 && (cmd === "左に入れる" || cmd === "右に入れる")) {
                     item.classList.add('indent-action');
                 }
-                
                 listEl.appendChild(item);
             });
         }
@@ -427,13 +433,12 @@
             else if (currentStage === 2) {
                 remainingBalls = 10; document.getElementById('ballCounter').innerText = `残り: ${remainingBalls}個`;
                 
-                // 事前に組まれた命令から「赤ルートのアクション」と「青ルートのアクション」を解析・特定する
+                // 1. 事前に組まれた全命令から「赤」「青」の各ルートに対応するアクションを完全に解析
                 let actionForRed = null;
                 let actionForBlue = null;
 
                 for (let i = 0; i < commands.length; i++) {
                     if (commands[i] === "もし赤い球なら") {
-                        // 次、またはそれ以降にある行動パーツを探す
                         if (i + 1 < commands.length && (commands[i+1] === "左に入れる" || commands[i+1] === "右に入れる")) {
                             actionForRed = commands[i+1];
                         }
@@ -445,20 +450,24 @@
                     }
                 }
 
-                // 10個の連続処理ループ
+                // 2. 10個の連続処理ループ
                 while (remainingBalls > 0) {
                     resetStage2Ball();
-                    while(ballY < 110) { ballY += 5; await new Promise(r => requestAnimationFrame(r)); }
+
+                    // 球がベルトコンベアの上からアバターの正面中央まで流れるアニメーション
+                    while(ballY < 110) { 
+                        ballY += 5; 
+                        await new Promise(r => requestAnimationFrame(r)); 
+                    }
 
                     let ballSorted = false;
                     let targetAction = (currentBallColor === "red") ? actionForRed : actionForBlue;
 
-                    // 球の色に応じた条件分岐のハイライト演出を実行
+                    // タイムラインをなぞって条件ブロックを光らせる演出
                     for(let i=0; i<commands.length; i++) {
                         const row = document.getElementById(`cmd-${i}`);
                         const cmd = commands[i];
 
-                        // 現在の球の色に対応する条件ブロックとその配下のアクションだけを光らせる
                         let shouldHighlight = false;
                         if (currentBallColor === "red" && (cmd === "もし赤い球なら" || (commands[i-1] === "もし赤い球なら" && cmd === targetAction))) {
                             shouldHighlight = true;
@@ -468,16 +477,22 @@
                         }
 
                         if (shouldHighlight && row) row.classList.add('active-cmd');
-                        await new Promise(r => setTimeout(r, 200));
+                        await new Promise(r => setTimeout(r, 150));
 
-                        // 実際の仕分けアニメーション処理
+                        // ★左右への吸い込みアニメーション（座標移動ロジックを確実に固定）
                         if (currentBallColor === "red" && cmd === "もし赤い球なら" && targetAction === "左に入れる") {
-                            let ballX = 158;
-                            while(ballX > 65 || ballY < 240) { if(ballX > 65) ballX -= 6; if(ballY < 240) ballY += 8; await new Promise(r => requestAnimationFrame(r)); }
+                            while(ballX > 65 || ballY < 240) { 
+                                if(ballX > 65) ballX -= 6; 
+                                if(ballY < 240) ballY += 8; 
+                                await new Promise(r => requestAnimationFrame(r)); 
+                            }
                             ballSorted = true;
                         } else if (currentBallColor === "blue" && cmd === "もし青い球なら" && targetAction === "右に入れる") {
-                            let ballX = 158;
-                            while(ballX < 250 || ballY < 240) { if(ballX < 250) ballX += 6; if(ballY < 240) ballY += 8; await new Promise(r => requestAnimationFrame(r)); }
+                            while(ballX < 250 || ballY < 240) { 
+                                if(ballX < 250) ballX += 6; 
+                                if(ballY < 240) ballY += 8; 
+                                await new Promise(r => requestAnimationFrame(r)); 
+                            }
                             ballSorted = true;
                         }
 
@@ -492,7 +507,7 @@
                     }
 
                     remainingBalls--; document.getElementById('ballCounter').innerText = `残り: ${remainingBalls}個`;
-                    await new Promise(r => setTimeout(r, 200));
+                    await new Promise(r => setTimeout(r, 150));
                 }
                 isRunning = false; lockGame(); currentMode = "clear"; currentScriptIndex = 0; setSpeech(stage2ClearScripts[0]);
             } 
