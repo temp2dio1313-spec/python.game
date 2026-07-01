@@ -19,44 +19,16 @@
         
         /* チュートリアル・吹き出しエリア */
         .tutorial-area {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            background: #ffffff;
-            padding: 15px 25px;
-            border-radius: 16px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            max-width: 1000px;
-            width: 100%;
-            box-sizing: border-box;
-            margin-bottom: 20px;
-            position: relative;
+            display: flex; align-items: center; gap: 20px; background: #ffffff;
+            padding: 15px 25px; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            max-width: 1000px; width: 100%; box-sizing: border-box; margin-bottom: 20px; position: relative;
         }
-        .avatar-box {
-            width: 70px;
-            height: 70px;
-            position: relative;
-            flex-shrink: 0;
-        }
-        .avatar-talk-canvas {
-            width: 70px;
-            height: 70px;
-            animation: float 2s ease-in-out infinite;
-        }
+        .avatar-box { width: 70px; height: 70px; position: relative; flex-shrink: 0; }
+        .avatar-talk-canvas { width: 70px; height: 70px; animation: float 2s ease-in-out infinite; }
         .speech-bubble {
-            position: relative;
-            background: #f1f5f9;
-            border-radius: 12px;
-            padding: 15px 40px 15px 20px;
-            color: #334155;
-            font-size: 15px;
-            font-weight: bold;
-            line-height: 1.6;
-            flex-grow: 1;
-            cursor: pointer;
-            user-select: none;
-            border: 2px solid #cbd5e1;
-            transition: background 0.2s;
+            position: relative; background: #f1f5f9; border-radius: 12px; padding: 15px 40px 15px 20px;
+            color: #334155; font-size: 15px; font-weight: bold; line-height: 1.6; flex-grow: 1;
+            cursor: pointer; user-select: none; border: 2px solid #cbd5e1; transition: background 0.2s;
         }
         .speech-bubble:hover { background: #e2e8f0; }
         .speech-bubble::before {
@@ -80,24 +52,15 @@
 
         /* メインコンテンツエリア */
         .container {
-            display: flex;
-            gap: 30px;
-            background: white;
-            padding: 25px;
-            border-radius: 16px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
-            max-width: 1000px;
-            width: 100%;
-            box-sizing: border-box;
-            opacity: 0.4;
-            pointer-events: none;
-            transition: all 0.3s;
+            display: flex; gap: 30px; background: white; padding: 25px; border-radius: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); max-width: 1000px; width: 100%;
+            box-sizing: border-box; opacity: 0.4; pointer-events: none; transition: all 0.3s;
         }
         .active-game { opacity: 1; pointer-events: auto; }
         .stage-view { display: none; gap: 30px; width: 100%; }
         .stage-view.active-view { display: flex; }
 
-        /* マップのスタイル */
+        /* ステージ1：マップのスタイル */
         #map {
             display: grid; grid-template-columns: repeat(5, 60px); grid-template-rows: repeat(5, 60px);
             gap: 4px; background-color: #e2e8f0; border: 4px solid #cbd5e1; border-radius: 12px; padding: 4px;
@@ -116,27 +79,33 @@
         }
         .conveyor-belt {
             width: 200px; height: 40px; background: #64748b; border-radius: 20px;
-            position: relative; display: flex; align-items: center; justify-content: center;
+            position: relative; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;
         }
-        .box-container {
-            display: flex; justify-content: space-between; width: 260px; position: absolute; bottom: 30px;
-        }
+        .box-container { display: flex; justify-content: space-between; width: 260px; position: absolute; bottom: 30px; }
         .color-box {
             width: 70px; height: 60px; border-radius: 8px; display: flex; align-items: center;
             justify-content: center; font-size: 14px; font-weight: bold; color: white;
         }
         .box-red { background: #ef4444; border: 3px solid #b91c1c; }
         .box-blue { background: #3b82f6; border: 3px solid #1d4ed8; }
-        
-        /* カウンター表示用スタイル */
         .count-badge {
             position: absolute; top: 15px; right: 15px; background: #475569; color: white;
             padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold;
         }
 
-        .avatar-canvas {
-            position: absolute; width: 60px; height: 60px; animation: float 2s ease-in-out infinite;
+        /* ステージ3：印刷工場エリア */
+        #factoryArea {
+            display: flex; flex-direction: column; align-items: center; background: #f1f5f9;
+            border: 4px solid #cbd5e1; border-radius: 12px; width: 316px; height: 316px; position: relative; padding: 15px; box-sizing: border-box;
         }
+        .factory-display {
+            width: 100%; background: #ffffff; border: 2px solid #cbd5e1; border-radius: 8px;
+            height: 180px; overflow-y: auto; padding: 10px; box-sizing: border-box; font-size: 16px;
+            font-weight: bold; color: #1e293b; display: flex; flex-wrap: wrap; gap: 6px; content-visibility: auto;
+        }
+        .word-token { background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 4px; border: 1px solid #7dd3fc; }
+
+        .avatar-canvas { position: absolute; width: 60px; height: 60px; animation: float 2s ease-in-out infinite; }
 
         @keyframes float {
             0% { transform: translateY(0px); }
@@ -146,7 +115,7 @@
 
         .control-panel { display: flex; flex-direction: column; width: 280px; }
         .btn-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
-        button { padding: 10px; font-size: 14px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+        button { padding: 10px; font-size: 13px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
         .btn-cmd { background-color: #38bdf8; color: white; }
         .btn-cmd:hover { background-color: #7dd3fc; }
         .btn-action { background-color: #4ade80; color: white; font-size: 16px; grid-column: span 2; }
@@ -159,7 +128,7 @@
             min-height: 150px; background-color: #f8fafc; max-height: 200px; overflow-y: auto;
         }
         .command-item {
-            background-color: #e2e8f0; color: #475569; padding: 6px 10px; margin: 4px 0; border-radius: 6px; font-size: 14px; border-left: 5px solid #38bdf8;
+            background-color: #e2e8f0; color: #475569; padding: 6px 10px; margin: 4px 0; border-radius: 6px; font-size: 13px; border-left: 5px solid #38bdf8;
         }
         .active-cmd { background-color: #fef08a !important; border-left-color: #eab308 !important; }
     </style>
@@ -197,6 +166,16 @@
             </div>
         </div>
 
+        <div id="stage3View" class="stage-view">
+            <div id="factoryArea">
+                <div class="count-badge" id="wordCounter">作成数: 0 / 10</div>
+                <div style="height: 65px; position: relative; width: 100%;">
+                    <canvas id="factoryAvatarCanvas" width="316" height="60" style="position: absolute; left: 0; top: 0;"></canvas>
+                </div>
+                <div class="factory-display" id="factoryDisplay"></div>
+            </div>
+        </div>
+
         <div class="control-panel">
             <h3>1. 命令の追加</h3>
             <div class="btn-group" id="commandButtonGroup"></div>
@@ -220,112 +199,102 @@
             "そのためにまずは、プログラミングの基本3構造について学んでいこう！",
             "まずは『順次構造』というものを学んでいくよ！早速だけど、ボタンを命令したい順に押して、ぼくをゴールまで連れてって！"
         ];
-
         const stage1ClearScripts = [
             "やったー！ゴールまで連れてってくれてありがとう！",
             "今みたいに、上から順番に命令を1つずつ実行していく構造のことを、『順次構造』というんだ！それじゃ次に行ってみよう！"
         ];
-
         const stage2StartScripts = [
             "次は『分岐構造』について学んでいくよ！",
-            "ベルトコンベアから、赤い球と青い球が【ランダムに10個】連続で運ばれてくるんだ。",
-            "アバターに条件判断の命令を組み合わせて、「もし赤い球なら左の箱」「青い球なら右の箱」へ正しく仕分けさせてみてね！"
+            "ベルトコンベアから、赤い球と青い球がランダムに10個連続で運ばれてくるんだ。",
+            "今回は「条件パーツ」と「行動パーツ」に分かれているよ！うまく組み合わせて「もし赤い球なら左に」「もし青い球なら右に」仕分けをしてね！"
         ];
-
         const stage2ClearScripts = [
             "すごい！10個すべての球をきれいに仕分けられたね！",
-            "「もし〜ならA、そうでなければB」という風に、条件によって進むルートを変える仕組みを『分岐構造（条件分岐）』というんだ！",
-            "Pythonではこれを「if文」を使って表現するよ。これで流れの基本はバッチリだね！"
+            "「もし〜ならA、そうでなければB」という風に条件で進むルートを変える仕組みを『分岐構造』というんだ！それじゃ最後に行ってみよう！"
+        ];
+        const stage3StartScripts = [
+            "最後は『反復構造』について学んでいくよ！",
+            "今度はアバターに『情報Ⅰ』という言葉をぴったり10回作らせてほしいんだ！",
+            "同じ命令を何度も並べるのは大変だけど、反復パーツを使えばすっきりまとめられるよ。挑戦してみてね！"
+        ];
+        const stage3ClearScripts = [
+            "完璧！大成功だよ！",
+            "決まった回数や、条件を満たすまで同じ処理を繰り返す仕組みのことを『反復構造（ループ処理）』というんだ！",
+            "Pythonではこれを「for文」や「while文」を使って表現するよ。これでプログラミングの基本3構造はすべてマスターだね！"
         ];
 
         let currentStage = 1; 
-        let currentMode = "start"; // start, clear
+        let currentMode = "start"; 
         let currentScriptIndex = 0;
 
-        // ステージ1用データ
+        // ステージ1用
         const mapData = [[0,0,0,0,0],[1,1,0,1,0],[0,0,0,1,0],[0,1,1,1,0],[0,0,0,0,2]];
         let robot = { x: 0, y: 0, dir: 0 }; 
 
-        // ステージ2用：10個のボール処理関連データ
-        let currentBallColor = "red"; 
-        let ballY = 0; 
-        let remainingBalls = 10;
+        // ステージ2用
+        let currentBallColor = "red"; let ballY = 0; let remainingBalls = 10;
+        let lastCondition = ""; // 直前に読み込まれた条件を記憶する変数
 
-        let commands = [];
-        let isRunning = false;
-        let blinkTimer = 0;
-        let isBlinking = false;
-        
-        let currentCtx = null, currentCanvas = null;
-        let talkCtx = null, talkCanvas = null;
-        let conveyorCtx = null, conveyorCanvas = null;
+        // ステージ3用
+        let createdWordCount = 0;
+        let textBuffer = "";
+
+        let commands = []; let isRunning = false; let blinkTimer = 0; let isBlinking = false;
+        let currentCtx = null, currentCanvas = null, talkCtx = null, talkCanvas = null;
+        let conveyorCtx = null, conveyorCanvas = null, factoryCtx = null, factoryCanvas = null;
 
         function handleSpeechClick() {
             if (currentStage === 1 && currentMode === "start") {
-                if (currentScriptIndex < startScripts.length - 1) {
-                    currentScriptIndex++;
-                    setSpeech(startScripts[currentScriptIndex]);
-                    if (currentScriptIndex === startScripts.length - 1) unlockGame();
-                }
+                if (currentScriptIndex < startScripts.length - 1) { currentScriptIndex++; setSpeech(startScripts[currentScriptIndex]); if (currentScriptIndex === startScripts.length - 1) unlockGame(); }
             } else if (currentStage === 1 && currentMode === "clear") {
-                if (currentScriptIndex < stage1ClearScripts.length - 1) {
-                    currentScriptIndex++;
-                    setSpeech(stage1ClearScripts[currentScriptIndex]);
-                } else {
-                    transitionToStage2();
-                }
+                if (currentScriptIndex < stage1ClearScripts.length - 1) { currentScriptIndex++; setSpeech(stage1ClearScripts[currentScriptIndex]); } 
+                else { transitionToStage(2); }
             } else if (currentStage === 2 && currentMode === "start") {
-                if (currentScriptIndex < stage2StartScripts.length - 1) {
-                    currentScriptIndex++;
-                    setSpeech(stage2StartScripts[currentScriptIndex]);
-                    if (currentScriptIndex === stage2StartScripts.length - 1) unlockGame();
-                }
+                if (currentScriptIndex < stage2StartScripts.length - 1) { currentScriptIndex++; setSpeech(stage2StartScripts[currentScriptIndex]); if (currentScriptIndex === stage2StartScripts.length - 1) unlockGame(); }
             } else if (currentStage === 2 && currentMode === "clear") {
-                if (currentScriptIndex < stage2ClearScripts.length - 1) {
-                    currentScriptIndex++;
-                    setSpeech(stage2ClearScripts[currentScriptIndex]);
-                } else {
-                    document.getElementById('nextBtn').style.display = 'none';
-                }
+                if (currentScriptIndex < stage2ClearScripts.length - 1) { currentScriptIndex++; setSpeech(stage2ClearScripts[currentScriptIndex]); } 
+                else { transitionToStage(3); }
+            } else if (currentStage === 3 && currentMode === "start") {
+                if (currentScriptIndex < stage3StartScripts.length - 1) { currentScriptIndex++; setSpeech(stage3StartScripts[currentScriptIndex]); if (currentScriptIndex === stage3StartScripts.length - 1) unlockGame(); }
+            } else if (currentStage === 3 && currentMode === "clear") {
+                if (currentScriptIndex < stage3ClearScripts.length - 1) { currentScriptIndex++; setSpeech(stage3ClearScripts[currentScriptIndex]); } 
+                else { document.getElementById('nextBtn').style.display = 'none'; }
             }
         }
 
         function setSpeech(text) { document.getElementById('speechText').innerText = text; }
-        function unlockGame() {
-            document.getElementById('nextBtn').style.display = 'none';
-            document.getElementById('gameContainer').classList.add('active-game');
-        }
-        function lockGame() {
-            document.getElementById('gameContainer').classList.remove('active-game');
-            document.getElementById('nextBtn').style.display = 'inline';
-        }
+        function unlockGame() { document.getElementById('nextBtn').style.display = 'none'; document.getElementById('gameContainer').classList.add('active-game'); }
+        function lockGame() { document.getElementById('gameContainer').classList.remove('active-game'); document.getElementById('nextBtn').style.display = 'inline'; }
 
-        function transitionToStage2() {
-            currentStage = 2; currentMode = "start"; currentScriptIndex = 0;
-            document.getElementById('mainTitle').innerText = "アルゴリズム学習シミュレーター（分岐構造）";
-            document.getElementById('stage1View').classList.remove('active-view');
-            document.getElementById('stage2View').classList.add('active-view');
-            
-            setSpeech(stage2StartScripts[0]);
+        // ステージ遷移システム（命令リストのリセット含む）
+        function transitionToStage(stageNum) {
+            currentStage = stageNum; currentMode = "start"; currentScriptIndex = 0;
+            commands = []; // ← ★命令リストをリセット
+            updateCommandList();
             lockGame();
+
+            if (stageNum === 2) {
+                document.getElementById('mainTitle').innerText = "アルゴリズム学習シミュレーター（分岐構造）";
+                document.getElementById('stage1View').classList.remove('active-view');
+                document.getElementById('stage2View').classList.add('active-view');
+                setSpeech(stage2StartScripts[0]);
+                remainingBalls = 10; document.getElementById('ballCounter').innerText = `残り: 10個`;
+                resetStage2Ball();
+            } else if (stageNum === 3) {
+                document.getElementById('mainTitle').innerText = "アルゴリズム学習シミュレーター（反復構造）";
+                document.getElementById('stage2View').classList.remove('active-view');
+                document.getElementById('stage3View').classList.add('active-view');
+                setSpeech(stage3StartScripts[0]);
+                createdWordCount = 0; document.getElementById('wordCounter').innerText = `作成数: 0 / 10`;
+                document.getElementById('factoryDisplay').innerHTML = "";
+            }
             initControlPanel();
-            remainingBalls = 10;
-            updateCounterDisplay();
-            resetStage2Ball();
         }
 
-        function resetStage2Ball() {
-            currentBallColor = Math.random() > 0.5 ? "red" : "blue";
-            ballY = 30;
-        }
-
-        function updateCounterDisplay() {
-            document.getElementById('ballCounter').innerText = `残り: ${remainingBalls}個`;
-        }
+        function resetStage2Ball() { currentBallColor = Math.random() > 0.5 ? "red" : "blue"; ballY = 30; }
 
         function initControlPanel() {
-            const group = document.getElementById('commandButtonGroup');
-            group.innerHTML = '';
+            const group = document.getElementById('commandButtonGroup'); group.innerHTML = '';
             if (currentStage === 1) {
                 group.innerHTML = `
                     <button class="btn-cmd" onclick="addCommand('直進')">1歩進む</button>
@@ -333,33 +302,38 @@
                     <button class="btn-cmd" onclick="addCommand('左回転')">左を向く</button>
                     <button class="btn-clear" onclick="clearCommands()">リセット</button>
                 `;
-            } else {
+            } else if (currentStage === 2) {
                 group.innerHTML = `
-                    <button class="btn-cmd" style="grid-column: span 2; background:#f43f5e;" onclick="addCommand('もし赤い球なら左に押す')">もし赤なら左へ</button>
-                    <button class="btn-cmd" style="grid-column: span 2; background:#3b82f6;" onclick="addCommand('それ以外（青）なら右に押す')">それ以外なら右へ</button>
+                    <button class="btn-cmd" style="background:#f43f5e;" onclick="addCommand('もし赤い球なら')">もし赤い球なら</button>
+                    <button class="btn-cmd" style="background:#3b82f6;" onclick="addCommand('もし青い球なら')">もし青い球なら</button>
+                    <button class="btn-cmd" style="background:#10b981;" onclick="addCommand('左に入れる')">左に入れる</button>
+                    <button class="btn-cmd" style="background:#10b981;" onclick="addCommand('右に入れる')">右に入れる</button>
                     <button class="btn-clear" style="grid-column: span 2;" onclick="clearCommands()">リセット</button>
+                `;
+            } else if (currentStage === 3) {
+                group.innerHTML = `
+                    <button class="btn-cmd" style="background:#ec4899;" onclick="addCommand('ここから反復')">ここから反復</button>
+                    <button class="btn-cmd" style="background:#ec4899;" onclick="addCommand('ここまで反復')">ここまで反復</button>
+                    <button class="btn-cmd" style="background:#6366f1;" onclick="addCommand('「情」を置く')">「情」を置く</button>
+                    <button class="btn-cmd" style="background:#6366f1;" onclick="addCommand('「報」を置く')">「報」を置く</button>
+                    <button class="btn-cmd" style="background:#6366f1;" onclick="addCommand('「Ⅰ」を置く')">「Ⅰ」を置く</button>
+                    <button class="btn-clear" onclick="clearCommands()">リセット</button>
                 `;
             }
         }
 
         function drawMap() {
             if (currentStage !== 1) return;
-            const mapElement = document.getElementById('map');
-            mapElement.innerHTML = '';
+            const mapElement = document.getElementById('map'); mapElement.innerHTML = '';
             currentCanvas = null; currentCtx = null;
-
             for (let y = 0; y < 5; y++) {
                 for (let x = 0; x < 5; x++) {
-                    const cell = document.createElement('div');
-                    cell.classList.add('cell');
+                    const cell = document.createElement('div'); cell.classList.add('cell');
                     if (mapData[y][x] === 1) cell.classList.add('wall');
                     if (mapData[y][x] === 2) { cell.classList.add('goal'); cell.innerText = 'GOAL'; }
                     if (robot.x === x && robot.y === y) {
-                        const canvas = document.createElement('canvas');
-                        canvas.width = 60; canvas.height = 60;
-                        canvas.classList.add('avatar-canvas');
-                        cell.appendChild(canvas);
-                        currentCanvas = canvas; currentCtx = canvas.getContext('2d');
+                        const canvas = document.createElement('canvas'); canvas.width = 60; canvas.height = 60; canvas.classList.add('avatar-canvas');
+                        cell.appendChild(canvas); currentCanvas = canvas; currentCtx = canvas.getContext('2d');
                     }
                     mapElement.appendChild(cell);
                 }
@@ -367,187 +341,193 @@
         }
 
         function drawAvatarSpec(ctx, w, h, dir, blinkFlag) {
-            ctx.clearRect(0, 0, w, h);
-            const cx = w / 2, cy = h / 2;
+            ctx.clearRect(0, 0, w, h); const cx = w / 2, cy = h / 2;
             ctx.shadowBlur = 6; ctx.shadowColor = 'rgba(244, 180, 198, 0.4)';
             let bodyGrad = ctx.createRadialGradient(cx - 4, cy - 4, 2, cx, cy, 20);
             bodyGrad.addColorStop(0, '#ffffff'); bodyGrad.addColorStop(0.6, '#fff1f2'); bodyGrad.addColorStop(1, '#fecdd3');
             ctx.beginPath(); ctx.arc(cx, cy, 20, 0, Math.PI * 2); ctx.fillStyle = bodyGrad; ctx.fill(); ctx.shadowBlur = 0;
-
-            ctx.fillStyle = 'rgba(fb, 113, 133, 0.35)';
-            ctx.beginPath(); ctx.arc(cx - 10, cy + 3, 4, 0, Math.PI * 2); ctx.arc(cx + 10, cy + 3, 4, 0, Math.PI * 2); ctx.fill();
-
-            ctx.fillStyle = '#fda4af';
-            let angle = dir * (Math.PI / 2);
-            let pointerX = cx + Math.cos(angle) * 14, pointerY = cy + Math.sin(angle) * 14;
+            ctx.fillStyle = 'rgba(fb, 113, 133, 0.35)'; ctx.beginPath(); ctx.arc(cx - 10, cy + 3, 4, 0, Math.PI * 2); ctx.arc(cx + 10, cy + 3, 4, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#fda4af'; let angle = dir * (Math.PI / 2); let pointerX = cx + Math.cos(angle) * 14, pointerY = cy + Math.sin(angle) * 14;
             ctx.beginPath(); ctx.arc(pointerX, pointerY, 3, 0, Math.PI * 2); ctx.fill();
-
-            let offsetX = Math.cos(angle) * 2, offsetY = Math.sin(angle) * 2;
-            let eyeLX = cx - 7 + offsetX, eyeRX = cx + 7 + offsetX, eyeY = cy - 2 + offsetY;
+            let offsetX = Math.cos(angle) * 2, offsetY = Math.sin(angle) * 2; let eyeLX = cx - 7 + offsetX, eyeRX = cx + 7 + offsetX, eyeY = cy - 2 + offsetY;
             ctx.strokeStyle = '#4a5568'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
-
             if (blinkFlag) {
-                ctx.beginPath(); ctx.arc(eyeLX, eyeY + 1, 3, Math.PI, 0, false); ctx.stroke();
-                ctx.beginPath(); ctx.arc(eyeRX, eyeY + 1, 3, Math.PI, 0, false); ctx.stroke();
+                ctx.beginPath(); ctx.arc(eyeLX, eyeY + 1, 3, Math.PI, 0, false); ctx.stroke(); ctx.beginPath(); ctx.arc(eyeRX, eyeY + 1, 3, Math.PI, 0, false); ctx.stroke();
             } else {
                 ctx.fillStyle = '#4a5568'; ctx.beginPath(); ctx.arc(eyeLX, eyeY, 2.5, 0, Math.PI * 2); ctx.arc(eyeRX, eyeY, 2.5, 0, Math.PI * 2); ctx.fill();
             }
         }
 
         function updateAnimation() {
-            blinkTimer++;
-            isBlinking = (blinkTimer % 200 < 12);
-
-            if (currentStage === 1 && currentCtx && currentCanvas) {
-                drawAvatarSpec(currentCtx, currentCanvas.width, currentCanvas.height, robot.dir, isBlinking);
-            }
-            if (talkCtx && talkCanvas) {
-                drawAvatarSpec(talkCtx, talkCanvas.width, talkCanvas.height, 1, isBlinking);
-            }
-
+            blinkTimer++; isBlinking = (blinkTimer % 200 < 12);
+            if (currentStage === 1 && currentCtx && currentCanvas) drawAvatarSpec(currentCtx, currentCanvas.width, currentCanvas.height, robot.dir, isBlinking);
+            if (talkCtx && talkCanvas) drawAvatarSpec(talkCtx, talkCanvas.width, talkCanvas.height, 1, isBlinking);
+            
             if (currentStage === 2 && conveyorCtx && conveyorCanvas) {
-                const ctx = conveyorCtx;
-                ctx.clearRect(0, 0, 316, 316);
-
-                ctx.save(); ctx.translate(128, 90);
-                drawAvatarSpec(ctx, 60, 60, 1, isBlinking);
-                ctx.restore();
-
+                conveyorCtx.clearRect(0, 0, 316, 316); conveyorCtx.save(); conveyorCtx.translate(128, 90); drawAvatarSpec(conveyorCtx, 60, 60, 1, isBlinking); conveyorCtx.restore();
                 if (isRunning && remainingBalls > 0) {
-                    ctx.beginPath(); ctx.arc(158, ballY, 12, 0, Math.PI * 2);
-                    ctx.fillStyle = currentBallColor === "red" ? "#ef4444" : "#3b82f6";
-                    ctx.fill();
+                    conveyorCtx.beginPath(); conveyorCtx.arc(158, ballY, 12, 0, Math.PI * 2); conveyorCtx.fillStyle = currentBallColor === "red" ? "#ef4444" : "#3b82f6"; conveyorCtx.fill();
                 }
+            }
+            if (currentStage === 3 && factoryCtx && factoryCanvas) {
+                factoryCtx.clearRect(0, 0, 316, 60); factoryCtx.save(); factoryCtx.translate(128, 0); drawAvatarSpec(factoryCtx, 60, 60, 1, isBlinking); factoryCtx.restore();
             }
             requestAnimationFrame(updateAnimation);
         }
 
         function addCommand(cmdText) { if (isRunning) return; commands.push(cmdText); updateCommandList(); }
         function updateCommandList() {
-            const listEl = document.getElementById('commandList');
-            listEl.innerHTML = '';
+            const listEl = document.getElementById('commandList'); listEl.innerHTML = '';
             commands.forEach((cmd, index) => {
-                const item = document.createElement('div');
-                item.classList.add('command-item'); item.id = `cmd-${index}`;
-                item.innerText = `${index + 1}: ${cmd}`;
-                listEl.appendChild(item);
+                const item = document.createElement('div'); item.classList.add('command-item'); item.id = `cmd-${index}`; item.innerText = `${index + 1}: ${cmd}`; listEl.appendChild(item);
             });
         }
-        function clearCommands() { 
-            if (isRunning) return; 
-            if (currentStage === 1) { robot = { x: 0, y: 0, dir: 0 }; drawMap(); } 
-            else { remainingBalls = 10; updateCounterDisplay(); resetStage2Ball(); }
-            commands = []; updateCommandList(); 
+        function clearCommands() {
+            if (isRunning) return;
+            if (currentStage === 1) { robot = { x: 0, y: 0, dir: 0 }; drawMap(); }
+            else if (currentStage === 2) { remainingBalls = 10; document.getElementById('ballCounter').innerText = `残り: 10個`; resetStage2Ball(); }
+            else if (currentStage === 3) { createdWordCount = 0; document.getElementById('wordCounter').innerText = `作成数: 0 / 10`; document.getElementById('factoryDisplay').innerHTML = ""; }
+            commands = []; updateCommandList();
         }
 
-        // プログラム実行
+        // メイン実行制御エンジン
         async function runProgram() {
-            if (isRunning || commands.length === 0) return;
-            isRunning = true;
+            if (isRunning || commands.length === 0) return; isRunning = true;
 
             if (currentStage === 1) {
                 robot = { x: 0, y: 0, dir: 0 }; drawMap();
                 for (let i = 0; i < commands.length; i++) {
-                    const row = document.getElementById(`cmd-${i}`);
-                    if (row) row.classList.add('active-cmd');
+                    const row = document.getElementById(`cmd-${i}`); if (row) row.classList.add('active-cmd');
                     await new Promise(r => setTimeout(r, 800));
-
                     if (commands[i] === '直進') moveForward();
                     else if (commands[i] === '右回転') robot.dir = (robot.dir + 1) % 4;
                     else if (commands[i] === '左回転') robot.dir = (robot.dir + 3) % 4;
-
-                    drawMap();
-                    if (row) row.classList.remove('active-cmd');
-                    if (mapData[robot.y][robot.x] === 2) { isRunning = false; triggerClear1(); return; }
+                    drawMap(); if (row) row.classList.remove('active-cmd');
+                    if (mapData[robot.y][robot.x] === 2) { isRunning = false; lockGame(); currentMode = "clear"; currentScriptIndex = 0; setSpeech(stage1ClearScripts[0]); return; }
                 }
-                if (mapData[robot.y][robot.x] !== 2) alert('失敗：目的地に到達できませんでした。');
-                isRunning = false;
-            } else {
-                // ステージ2：球を10回連続で流すループ
-                remainingBalls = 10;
-                updateCounterDisplay();
-
+                if (mapData[robot.y][robot.x] !== 2) alert('失敗：目的地に到達できませんでした。'); isRunning = false;
+            } 
+            else if (currentStage === 2) {
+                remainingBalls = 10; document.getElementById('ballCounter').innerText = `残り: ${remainingBalls}個`;
                 while (remainingBalls > 0) {
-                    resetStage2Ball();
-                    
-                    // 1. 球がアバターの前に流れてくる
-                    while(ballY < 110) {
-                        ballY += 5;
-                        await new Promise(r => requestAnimationFrame(r));
-                    }
+                    resetStage2Ball(); lastCondition = "";
+                    while(ballY < 110) { ballY += 5; await new Promise(r => requestAnimationFrame(r)); }
 
-                    let isSorted = false;
-                    // 2. 組まれた命令ブロックを一通り走査して判定
+                    let ballSorted = false;
                     for(let i=0; i<commands.length; i++) {
-                        const row = document.getElementById(`cmd-${i}`);
-                        if (row) row.classList.add('active-cmd');
-                        await new Promise(r => setTimeout(r, 300)); // ループ用に少しディレイを高速化
-
+                        const row = document.getElementById(`cmd-${i}`); if (row) row.classList.add('active-cmd');
+                        await new Promise(r => setTimeout(r, 250));
                         const cmd = commands[i];
-                        if (cmd.includes('もし赤い球なら') && currentBallColor === "red") {
-                            let ballX = 158;
-                            while(ballX > 65 || ballY < 240) {
-                                if(ballX > 65) ballX -= 6; if(ballY < 240) ballY += 8;
-                                conveyorCtx.clearRect(0,0,316,316);
-                                conveyorCtx.save(); conveyorCtx.translate(128, 90); drawAvatarSpec(conveyorCtx, 60, 60, 1, isBlinking); conveyorCtx.restore();
-                                conveyorCtx.beginPath(); conveyorCtx.arc(ballX, ballY, 12, 0, Math.PI*2); conveyorCtx.fillStyle = "#ef4444"; conveyorCtx.fill();
-                                await new Promise(r => requestAnimationFrame(r));
+
+                        if (cmd === "もし赤い球なら" || cmd === "もし青い球なら") {
+                            lastCondition = cmd; // 直前の条件パーツを記憶
+                        } else if (cmd === "左に入れる" || cmd === "右に入れる") {
+                            // 条件と行動が完全一致しているかロジック検証
+                            if (currentBallColor === "red" && lastCondition === "もし赤い球なら" && cmd === "左に入れる") {
+                                let ballX = 158;
+                                while(ballX > 65 || ballY < 240) { if(ballX > 65) ballX -= 6; if(ballY < 240) ballY += 8; await new Promise(r => requestAnimationFrame(r)); }
+                                ballSorted = true;
+                            } else if (currentBallColor === "blue" && lastCondition === "もし青い球なら" && cmd === "右に入れる") {
+                                let ballX = 158;
+                                while(ballX < 250 || ballY < 240) { if(ballX < 250) ballX += 6; if(ballY < 240) ballY += 8; await new Promise(r => requestAnimationFrame(r)); }
+                                ballSorted = true;
+                            } else {
+                                // 条件に合わない行動、もしくは順番違いが起きた時点で即座に失敗
+                                break;
                             }
-                            isSorted = true;
-                        } else if (cmd.includes('それ以外') && currentBallColor === "blue") {
-                            let ballX = 158;
-                            while(ballX < 250 || ballY < 240) {
-                                if(ballX < 250) ballX += 6; if(ballY < 240) ballY += 8;
-                                conveyorCtx.clearRect(0,0,316,316);
-                                conveyorCtx.save(); conveyorCtx.translate(128, 90); drawAvatarSpec(conveyorCtx, 60, 60, 1, isBlinking); conveyorCtx.restore();
-                                conveyorCtx.beginPath(); conveyorCtx.arc(ballX, ballY, 12, 0, Math.PI*2); conveyorCtx.fillStyle = "#3b82f6"; conveyorCtx.fill();
-                                await new Promise(r => requestAnimationFrame(r));
-                            }
-                            isSorted = true;
                         }
                         if (row) row.classList.remove('active-cmd');
-                        if (isSorted) break;
+                        if (ballSorted) break;
                     }
 
-                    // 間違った組み合わせ、またはスルーした場合のペナルティ落下の挙動
-                    if (!isSorted) {
-                        while(ballY < 300) { ballY += 8; await new Promise(r => requestAnimationFrame(r)); }
-                        alert('仕分け失敗：球の色に合う条件命令がリストにありませんでした。最初からやり直しです！');
-                        isRunning = false;
-                        resetStage2Ball();
-                        return;
+                    if (!ballSorted) {
+                        alert('仕分け失敗：「もし赤い球なら ➔ 左に入れる」「もし青い球なら ➔ 右に入れる」の順番でロジックを美しく並べてみてね！');
+                        isRunning = false; return;
                     }
+                    remainingBalls--; document.getElementById('ballCounter').innerText = `残り: ${remainingBalls}個`;
+                    await new Promise(r => setTimeout(r, 300));
+                }
+                isRunning = false; lockGame(); currentMode = "clear"; currentScriptIndex = 0; setSpeech(stage2ClearScripts[0]);
+            } 
+            else if (currentStage === 3) {
+                createdWordCount = 0; document.getElementById('wordCounter').innerText = `作成数: 0 / 10`;
+                document.getElementById('factoryDisplay').innerHTML = ""; textBuffer = "";
 
-                    remainingBalls--;
-                    updateCounterDisplay();
-                    await new Promise(r => setTimeout(r, 400)); // 球と球の間のインターバル
+                // 反復構造の解析ブロック
+                let loopStartIndex = commands.indexOf("ここから反復");
+                let loopEndIndex = commands.indexOf("ここまで反復");
+
+                if (loopStartIndex === -1 || loopEndIndex === -1 || loopStartIndex >= loopEndIndex) {
+                    alert("アルゴリズムエラー：「ここから反復」パーツと「ここまで反復」パーツで、繰り返したい命令を正しく挟んでください！");
+                    isRunning = false; return;
                 }
 
-                // 10個すべてノーミスで仕分け終えたらクリア
-                isRunning = false;
-                triggerClear2();
+                // 挟まれた中身の命令を抽出
+                let innerCommands = commands.slice(loopStartIndex + 1, loopEndIndex);
+                if(innerCommands.length === 0) {
+                    alert("エラー：反復ブロックの中身が空っぽです！"); isRunning = false; return;
+                }
+
+                // 反復回数：10回固定ループ
+                for (let loop = 0; loop < 10; loop++) {
+                    // 反復開始パーツのアクティブ化演出
+                    const startRow = document.getElementById(`cmd-${loopStartIndex}`);
+                    if (startRow) startRow.classList.add('active-cmd');
+                    await new Promise(r => setTimeout(r, 150));
+                    if (startRow) startRow.classList.remove('active-cmd');
+
+                    // 内部コマンドの順次実行
+                    for (let i = 0; i < innerCommands.length; i++) {
+                        let actualIndex = loopStartIndex + 1 + i;
+                        const row = document.getElementById(`cmd-${actualIndex}`);
+                        if (row) row.classList.add('active-cmd');
+                        await new Promise(r => setTimeout(r, 200));
+
+                        let cmd = innerCommands[i];
+                        if (cmd === "「情」を置く") textBuffer += "情";
+                        else if (cmd === "「報」を置く") textBuffer += "報";
+                        else if (cmd === "「Ⅰ」を置く") textBuffer += "Ⅰ";
+
+                        // 文字の整合性リアルタイムチェック
+                        if (textBuffer === "情報Ⅰ") {
+                            createdWordCount++;
+                            document.getElementById('wordCounter').innerText = `作成数: ${createdWordCount} / 10`;
+                            let token = document.createElement('span'); token.classList.add('word-token'); token.innerText = "情報Ⅰ";
+                            document.getElementById('factoryDisplay').appendChild(token);
+                            textBuffer = ""; // バッファクリア
+                        }
+                        if (row) row.classList.remove('active-cmd');
+                    }
+
+                    const endRow = document.getElementById(`cmd-${loopEndIndex}`);
+                    if (endRow) endRow.classList.add('active-cmd');
+                    await new Promise(r => setTimeout(r, 150));
+                    if (endRow) endRow.classList.remove('active-cmd');
+                }
+
+                // 最終チェック判定
+                if (createdWordCount === 10 && textBuffer === "") {
+                    isRunning = false; lockGame(); currentMode = "clear"; currentScriptIndex = 0; setSpeech(stage3ClearScripts[0]);
+                } else {
+                    alert(`失敗：作成された文字列の形や数が正しくありません（途中で文字がズレているか、1ループで「情報Ⅰ」が完成していません）。反復の中に「情」「報」「Ⅰ」を正しい順番で1つずつ並べてみてね！`);
+                    isRunning = false;
+                }
             }
         }
 
         function moveForward() {
             let nextX = robot.x, nextY = robot.y;
-            if (robot.dir === 0) nextX++; if (robot.dir === 1) nextY++; if (robot.dir === 2) nextX--; if (robot.dir === 3) nextY--;
-            if (nextX >= 0 && nextX < 5 && nextY >= 0 && nextY < 5) {
-                if (mapData[nextY][nextX] !== 1) { robot.x = nextX; robot.y = nextY; }
-            }
+            if (robot.dir === 0) nextX++; else if (robot.dir === 1) nextY++; else if (robot.dir === 2) nextX--; else if (robot.dir === 3) nextY--;
+            if (nextX >= 0 && nextX < 5 && nextY >= 0 && nextY < 5) { if (mapData[nextY][nextX] !== 1) { robot.x = nextX; robot.y = nextY; } }
         }
 
-        function triggerClear1() { lockGame(); currentMode = "clear"; currentScriptIndex = 0; setSpeech(stage1ClearScripts[0]); }
-        function triggerClear2() { lockGame(); currentMode = "clear"; currentScriptIndex = 0; setSpeech(stage2ClearScripts[0]); }
-
-        // 初期設定
+        // ロード初期化
         document.getElementById('speechText').innerText = startScripts[0];
         talkCanvas = document.getElementById('talkAvatarCanvas'); talkCtx = talkCanvas.getContext('2d');
         conveyorCanvas = document.getElementById('conveyorCanvas'); conveyorCtx = conveyorCanvas.getContext('2d');
+        factoryCanvas = document.getElementById('factoryAvatarCanvas'); factoryCtx = factoryCanvas.getContext('2d');
         
-        initControlPanel();
-        drawMap();
-        updateAnimation();
+        initControlPanel(); drawMap(); updateAnimation();
     </script>
 </body>
 </html>
