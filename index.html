@@ -3,49 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>アルゴリズム学習シミュレーター（アバター版）</title>
+    <title>アルゴリズム学習シミュレーター（ふわふわアバター版）</title>
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
-            background-color: #f0f2f5;
+            background-color: #f7f9fa;
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 20px;
             margin: 0;
         }
-        h1 { color: #333; margin-bottom: 10px; }
-        p { color: #666; margin-top: 0; }
+        h1 { color: #4a5568; margin-bottom: 10px; }
+        p { color: #718096; margin-top: 0; }
         .container {
             display: flex;
             gap: 30px;
             background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
             max-width: 1000px;
         }
-        /* マップのスタイル */
+        /* マップのスタイル（パステル調に変更） */
         #map {
             display: grid;
             grid-template-columns: repeat(5, 60px);
             grid-template-rows: repeat(5, 60px);
-            gap: 2px;
-            background-color: #ccc;
-            border: 4px solid #333;
-            border-radius: 4px;
+            gap: 4px;
+            background-color: #e2e8f0;
+            border: 4px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 4px;
         }
         .cell {
-            background-color: #fff;
+            background-color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
+            font-size: 12px;
             font-weight: bold;
+            color: #94a3b8;
+            border-radius: 6px;
             position: relative;
         }
-        .wall { background-color: #7f8c8d; }
-        .goal { background-color: #ffeaa7; }
+        .wall { background-color: #94a3b8; }
+        .goal { 
+            background-color: #fef08a; 
+            color: #ca8a04;
+            border: 2px dashed #facc15;
+            box-sizing: border-box;
+        }
         
         /* アバター描画用のCanvas */
         .avatar-canvas {
@@ -54,6 +62,14 @@
             left: 0;
             width: 60px;
             height: 60px;
+            /* ほんのり浮いているような浮遊感を出すCSSアニメーション */
+            animation: float 2s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-3px); }
+            100% { transform: translateY(0px); }
         }
 
         /* コントロールパネル */
@@ -73,62 +89,67 @@
             font-size: 14px;
             font-weight: bold;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
+            transition: all 0.2s;
         }
-        .btn-cmd { background-color: #0984e3; color: white; }
-        .btn-action { background-color: #2ed573; color: white; font-size: 16px; grid-column: span 2; }
-        .btn-clear { background-color: #ff4757; color: white; }
+        .btn-cmd { background-color: #38bdf8; color: white; }
+        .btn-cmd:hover { background-color: #7dd3fc; }
+        .btn-action { background-color: #4ade80; color: white; font-size: 16px; grid-column: span 2; }
+        .btn-action:hover { background-color: #2ec4b6; }
+        .btn-clear { background-color: #f87171; color: white; }
+        .btn-clear:hover { background-color: #fca5a5; }
         
         /* 命令リストの表示 */
         .command-list-container {
-            border: 2px dashed #b2bec3;
-            border-radius: 6px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
             padding: 10px;
             min-height: 150px;
-            background-color: #fbfbfb;
+            background-color: #f8fafc;
             max-height: 200px;
             overflow-y: auto;
         }
         .command-item {
-            background-color: #dfe6e9;
+            background-color: #e2e8f0;
+            color: #475569;
             padding: 6px 10px;
             margin: 4px 0;
-            border-radius: 4px;
+            border-radius: 6px;
             font-size: 14px;
-            border-left: 5px solid #0984e3;
+            border-left: 5px solid #38bdf8;
         }
         .active-cmd {
-            background-color: #ffeaa7 !important;
-            border-left-color: #fdcb6e !important;
+            background-color: #fef08a !important;
+            border-left-color: #eab308 !important;
         }
         /* 解説エリアのスタイル */
         .explanation-panel {
             margin-top: 20px;
             background: white;
             padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
             max-width: 1000px;
             width: 100%;
             box-sizing: border-box;
         }
         pre {
-            background-color: #2d3436;
-            color: #dfe6e9;
+            background-color: #1e293b;
+            color: #f1f5f9;
             padding: 15px;
-            border-radius: 6px;
+            border-radius: 8px;
             overflow-x: auto;
             font-family: 'Courier New', Courier, monospace;
         }
-        .code-keyword { color: #ff7675; }
-        .code-comment { color: #b2bec3; }
+        .code-keyword { color: #f43f5e; }
+        .code-comment { color: #64748b; }
     </style>
 </head>
 <body>
 
     <h1>アルゴリズム学習シミュレーター</h1>
-    <p>命令を順番に並べて、丸いアバターを目的地（GOAL）まで導くプログラムを作成してください。</p>
+    <p>命令を順番に並べて、ふわふわのアバターを目的地（GOAL）まで導くプログラムを作成してください。</p>
 
     <div class="container">
         <div id="map"></div>
@@ -155,8 +176,8 @@
         <h2>このシステムで学ぶプログラミングの核心</h2>
         <hr>
         
-        <h3>4. ループ処理によるアニメーション（新しい概念）</h3>
-        <p>アバターが「一定時間ごとに勝手に瞬きをする」という動きは、プログラミングの<strong>定期実行（ループ処理）</strong>によって実現しています。JavaScriptの <code>requestAnimationFrame</code> という関数を使い、1秒間に約60回、画面を高速で描き直しています。</p>
+        <h3>4. ループ処理によるアニメーション</h3>
+        <p>アバターが「一定時間ごとに勝手に瞬きをする」という動きや、マスのうえで「常にゆらゆらと浮遊している」動きは、プログラミングの<strong>定期実行（ループ処理）</strong>によって実現しています。JavaScriptの <code>requestAnimationFrame</code> という関数を使い、1秒間に約60回、画面を高速で描き直しています。</p>
         <p>「今、何フレーム目か」を変数でカウントし、特定の周期が来たら「目を閉じる計算」に切り替えることで、生き物のような自然な瞬きをシミュレートしています。このように、ゲームの滑らかな動きもすべて算術と条件分岐の組み合わせでできています。</p>
     </div>
 
@@ -186,7 +207,6 @@
             const mapElement = document.getElementById('map');
             mapElement.innerHTML = '';
             
-            // 古いCanvasの参照をクリア
             currentCanvas = null;
             currentCtx = null;
 
@@ -200,7 +220,6 @@
                         cell.innerText = 'GOAL';
                     }
                     
-                    // アバターの現在位置にCanvasを配置
                     if (robot.x === x && robot.y === y) {
                         const canvas = document.createElement('canvas');
                         canvas.width = 60;
@@ -216,12 +235,11 @@
             }
         }
 
-        // アバターをCanvasに描画するメインループ（1秒間に60回実行）
+        // アバターの描画メインループ（ふわふわ質感を再現）
         function updateAnimation() {
             blinkTimer++;
             
-            // 約3秒（180フレーム）に1回、10フレームだけ目を閉じる
-            if (blinkTimer % 180 < 10) {
+            if (blinkTimer % 200 < 12) { // 瞬きの間隔をほんの少し調整
                 isBlinking = true;
             } else {
                 isBlinking = false;
@@ -231,53 +249,70 @@
                 const ctx = currentCtx;
                 const w = currentCanvas.width;
                 const h = currentCanvas.height;
+                const cx = w / 2;
+                const cy = h / 2;
                 
-                // 画面クリア
                 ctx.clearRect(0, 0, w, h);
 
-                // 1. 体（丸いアバター）の描画
-                ctx.beginPath();
-                ctx.arc(w / 2, h / 2, 22, 0, Math.PI * 2);
-                ctx.fillStyle = '#0984e3'; // 青色
-                ctx.fill();
-                ctx.lineWidth = 2;
-                ctx.strokeStyle = '#025aa5';
-                ctx.stroke();
+                // ふわふわ感を出すためのぼかし影設定
+                ctx.shadowBlur = 6;
+                ctx.shadowColor = 'rgba(244, 180, 198, 0.4)';
 
-                // 2. 向きを示すインジケータ（小さな突起）
+                // 1. 体のグラデーション（マシュマロピンク〜ホワイト）
+                let bodyGrad = ctx.createRadialGradient(cx - 4, cy - 4, 2, cx, cy, 20);
+                bodyGrad.addColorStop(0, '#ffffff');
+                bodyGrad.addColorStop(0.6, '#fff1f2');
+                bodyGrad.addColorStop(1, '#fecdd3'); // 淡いパステルピンク
+
                 ctx.beginPath();
-                ctx.fillStyle = '#ffffff';
-                let angle = robot.dir * (Math.PI / 2); // 0, 90, 180, 270度
-                let pointerX = w / 2 + Math.cos(angle) * 16;
-                let pointerY = h / 2 + Math.sin(angle) * 16;
-                ctx.arc(pointerX, pointerY, 4, 0, Math.PI * 2);
+                ctx.arc(cx, cy, 20, 0, Math.PI * 2);
+                ctx.fillStyle = bodyGrad;
                 ctx.fill();
 
-                // 3. 目の描画（向きに応じて位置を少しずらす）
-                let offsetX = Math.cos(angle) * 3;
-                let offsetY = Math.sin(angle) * 3;
-                let eyeLX = w / 2 - 7 + offsetX;
-                let eyeRX = w / 2 + 7 + offsetX;
-                let eyeY = h / 2 - 2 + offsetY;
+                // 影の設定を一旦リセット（目やチークに影響させないため）
+                ctx.shadowBlur = 0;
 
-                ctx.strokeStyle = '#ffffff';
-                ctx.lineWidth = 3;
+                // 2. ほんのりピンクの「チーク（ほっぺ）」
+                ctx.fillStyle = 'rgba(fb, 113, 133, 0.35)';
+                ctx.beginPath();
+                ctx.arc(cx - 10, cy + 3, 4, 0, Math.PI * 2); // 左ほっぺ
+                ctx.arc(cx + 10, cy + 3, 4, 0, Math.PI * 2); // 右ほっぺ
+                ctx.fill();
+
+                // 3. 向きを示すインジケータ（頭の上の小さなふわふわおねむリボン風）
+                ctx.fillStyle = '#fda4af';
+                let angle = robot.dir * (Math.PI / 2); 
+                let pointerX = cx + Math.cos(angle) * 14;
+                let pointerY = cy + Math.sin(angle) * 14;
+                ctx.beginPath();
+                ctx.arc(pointerX, pointerY, 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 4. 目の描画（優しいチャコールグレー）
+                let offsetX = Math.cos(angle) * 2;
+                let offsetY = Math.sin(angle) * 2;
+                let eyeLX = cx - 7 + offsetX;
+                let eyeRX = cx + 7 + offsetX;
+                let eyeY = cy - 2 + offsetY;
+
+                ctx.strokeStyle = '#4a5568';
+                ctx.lineWidth = 2.5;
                 ctx.lineCap = 'round';
 
                 if (isBlinking) {
-                    // まばたき（横線）
+                    // にっこり閉じた目（弧線に変えてかわいさをアップ）
                     ctx.beginPath();
-                    ctx.moveTo(eyeLX - 4, eyeY);
-                    ctx.lineTo(eyeLX + 4, eyeY);
-                    ctx.moveTo(eyeRX - 4, eyeY);
-                    ctx.lineTo(eyeRX + 4, eyeY);
+                    ctx.arc(eyeLX, eyeY + 1, 3, Math.PI, 0, false);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(eyeRX, eyeY + 1, 3, Math.PI, 0, false);
                     ctx.stroke();
                 } else {
-                    // 通常の目（縦長の楕円形、または丸）
-                    ctx.fillStyle = '#ffffff';
+                    // 通常のまるい目
+                    ctx.fillStyle = '#4a5568';
                     ctx.beginPath();
-                    ctx.arc(eyeLX, eyeY, 3, 0, Math.PI * 2);
-                    ctx.arc(eyeRX, eyeY, 3, 0, Math.PI * 2);
+                    ctx.arc(eyeLX, eyeY, 2.5, 0, Math.PI * 2);
+                    ctx.arc(eyeRX, eyeY, 2.5, 0, Math.PI * 2);
                     ctx.fill();
                 }
             }
@@ -373,7 +408,7 @@
 
         // 初回起動処理
         drawMap();
-        updateAnimation(); // アニメーションループの開始
+        updateAnimation();
     </script>
 </body>
 </html>
