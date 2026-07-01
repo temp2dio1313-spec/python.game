@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>アルゴリズム学習シミュレーター（チュートリアル版）</title>
+    <title>アルゴリズム学習シミュレーター</title>
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -61,7 +61,6 @@
         .speech-bubble:hover {
             background: #e2e8f0;
         }
-        /* 吹き出しの三角突起 */
         .speech-bubble::before {
             content: '';
             position: absolute;
@@ -85,7 +84,6 @@
         .speech-bubble:hover::after {
             border-right-color: #e2e8f0;
         }
-        /* ▼送りボタン */
         .next-indicator {
             position: absolute;
             right: 15px;
@@ -109,16 +107,15 @@
             border-radius: 16px;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
             max-width: 1000px;
-            opacity: 0.4; /* チュートリアル中は操作不可に見せる */
-            pointer-events: none; /* クリック不可 */
+            opacity: 0.4;
+            pointer-events: none;
             transition: all 0.3s;
         }
         .active-game {
             opacity: 1;
-            pointer-events: auto; /* チュートリアル終了後に解放 */
+            pointer-events: auto;
         }
 
-        /* マップのスタイル */
         #map {
             display: grid;
             grid-template-columns: repeat(5, 60px);
@@ -163,7 +160,6 @@
             100% { transform: translateY(0px); }
         }
 
-        /* コントロールパネル */
         .control-panel {
             display: flex;
             flex-direction: column;
@@ -234,7 +230,7 @@
         <div class="avatar-box">
             <canvas id="talkAvatarCanvas" class="avatar-talk-canvas" width="70" height="70"></canvas>
         </div>
-        <div class="speech-bubble" id="speechBubble" onclick="nextScript()">
+        <div class="speech-bubble" id="speechBubble" onclick="handleSpeechClick()">
             <span id="speechText">読み込み中...</span>
             <span class="next-indicator" id="nextBtn">▼</span>
         </div>
@@ -265,19 +261,27 @@
         <h2>このシステムで学ぶプログラミングの核心</h2>
         <hr>
         <h3>4. ループ処理によるアニメーション</h3>
-        <p>アバターが「一定時間ごとに勝手に瞬きをする」という動きや、マスのうえで「常にゆらゆらと浮遊している」動きは、プログラミングの<strong>定期実行（ループ処理）</strong>によって実現しています。JavaScriptの <code>requestAnimationFrame</code> という関数を使い、1秒間に約60回、画面を高速で描き直しています。</p>
+        <p>アバターが一定時間ごとに勝手に瞬きをする動きは、プログラミングの定期実行（ループ処理）によって実現しています。</p>
     </div>
 
     <script>
-        // セリフの配列データ
-        const scripts = [
+        // 前半のチュートリアルセリフ
+        const startScripts = [
             "こんにちは！ここではPythonっていうプログラミング言語を学んでいくよ",
-            "Pythonっていうのは、本来なら0と1で表されるコンピュータ言語を、人間が分かりやすく、構築しやすいように設計された、英語と記号でできた言語なんだ！",
+            "Pythonっていうのは、本来なら0と1で表されるコンピュータ言語を、人間が分かりやすく、構築しやすいように設計された、英語と記号でできた言語んだ！",
             "ifやelse、printなど、聞いたことがあるような英単語で作ることができる言語だから、怖がらずに学んでいこう！",
             "情報Ⅰで用いるPythonの勉強には、『コマンドを覚える』というよりかは、『流れを意識する』ことが大切になってくるんだ",
             "そのためにまずは、プログラミングの基本3構造について学んでいこう！",
             "まずは『順次構造』というものを学んでいくよ！早速だけど、ボタンを命令したい順に押して、ぼくをゴールまで連れてって！"
         ];
+
+        // クリア後に流すセリフ
+        const clearScripts = [
+            "やったー！ゴールまで連れてってくれてありがとう！",
+            "今みたいに、上から順番に命令を1つずつ実行していく構造のことを、『順次構造』というんだ！それじゃ次に行ってみよう！"
+        ];
+
+        let currentMode = "start"; // "start" または "clear"
         let currentScriptIndex = 0;
 
         // 5x5 マップデータ
@@ -289,12 +293,10 @@
             [0, 0, 0, 0, 2]
         ];
 
-        // アバターの状態
         let robot = { x: 0, y: 0, dir: 0 }; 
         let commands = [];
         let isRunning = false;
 
-        // アニメーション用変数
         let blinkTimer = 0;
         let isBlinking = false;
         let currentCanvas = null;
@@ -302,16 +304,27 @@
         let talkCanvas = null;
         let talkCtx = null;
 
-        // セリフを進める関数
-        function nextScript() {
-            if (currentScriptIndex < scripts.length - 1) {
-                currentScriptIndex++;
-                document.getElementById('speechText').innerText = scripts[currentScriptIndex];
-                
-                // 最後のセリフになったら▼を消してゲームエリアをアクティブにする
-                if (currentScriptIndex === scripts.length - 1) {
-                    document.getElementById('nextBtn').style.display = 'none';
-                    document.getElementById('gameContainer').classList.add('active-game');
+        // 吹き出しをクリックした時の処理
+        function handleSpeechClick() {
+            if (currentMode === "start") {
+                if (currentScriptIndex < startScripts.length - 1) {
+                    currentScriptIndex++;
+                    document.getElementById('speechText').innerText = startScripts[currentScriptIndex];
+                    
+                    if (currentScriptIndex === startScripts.length - 1) {
+                        document.getElementById('nextBtn').style.display = 'none';
+                        document.getElementById('gameContainer').classList.add('active-game');
+                    }
+                }
+            } else if (currentMode === "clear") {
+                if (currentScriptIndex < clearScripts.length - 1) {
+                    currentScriptIndex++;
+                    document.getElementById('speechText').innerText = clearScripts[currentScriptIndex];
+                    
+                    if (currentScriptIndex === clearScripts.length - 1) {
+                        document.getElementById('nextBtn').style.display = 'none';
+                        // ここに次のステージへの遷移ロジックなどを拡張可能
+                    }
                 }
             }
         }
@@ -346,7 +359,7 @@
             }
         }
 
-        // アバター単体をレンダリングする共通関数
+        // アバター共通描画
         function drawAvatarSpec(ctx, w, h, dir, blinkFlag) {
             ctx.clearRect(0, 0, w, h);
             const cx = w / 2;
@@ -406,24 +419,19 @@
             }
         }
 
-        // アニメーション描画ループ
         function updateAnimation() {
             blinkTimer++;
             isBlinking = (blinkTimer % 200 < 12);
 
-            // マップ上のアバターを描画
             if (currentCtx && currentCanvas) {
                 drawAvatarSpec(currentCtx, currentCanvas.width, currentCanvas.height, robot.dir, isBlinking);
             }
-            // 吹き出しの横のトーク用アバターを描画（常に前向き：dir=1(下向き)とする）
             if (talkCtx && talkCanvas) {
                 drawAvatarSpec(talkCtx, talkCanvas.width, talkCanvas.height, 1, isBlinking);
             }
-
             requestAnimationFrame(updateAnimation);
         }
 
-        // コマンド操作関連の関数群
         function addCommand(cmdText) { if (isRunning) return; commands.push(cmdText); updateCommandList(); }
         function updateCommandList() {
             const listEl = document.getElementById('commandList');
@@ -438,6 +446,7 @@
         }
         function clearCommands() { if (isRunning) return; commands = []; robot = { x: 0, y: 0, dir: 0 }; updateCommandList(); drawMap(); }
 
+        // プログラム実行処理
         async function runProgram() {
             if (isRunning || commands.length === 0) return;
             isRunning = true;
@@ -457,14 +466,29 @@
                 drawMap();
                 if (currentCmdRow) currentCmdRow.classList.remove('active-cmd');
 
+                // ゲームクリア判定
                 if (mapData[robot.y][robot.x] === 2) {
-                    alert('クリア：目的地に到達しました。正しいアルゴリズムが構築できています。');
                     isRunning = false;
+                    triggerClearSequence(); // クリア演出へ移行
                     return;
                 }
             }
             if (mapData[robot.y][robot.x] !== 2) alert('失敗：目的地に到達できませんでした。命令の順番を見直してください。');
             isRunning = false;
+        }
+
+        // クリアした瞬間の制御関数
+        function triggerClearSequence() {
+            // ゲーム画面をロックする
+            document.getElementById('gameContainer').classList.remove('active-game');
+            
+            // 吹き出しモードをクリア後に変更
+            currentMode = "clear";
+            currentScriptIndex = 0;
+            
+            // 最初のクリアセリフをセットし、送りボタン（▼）を再表示
+            document.getElementById('speechText').innerText = clearScripts[0];
+            document.getElementById('nextBtn').style.display = 'inline';
         }
 
         function moveForward() {
@@ -478,8 +502,8 @@
             }
         }
 
-        // 初期化処理
-        document.getElementById('speechText').innerText = scripts[0];
+        // 初期セット
+        document.getElementById('speechText').innerText = startScripts[0];
         talkCanvas = document.getElementById('talkAvatarCanvas');
         talkCtx = talkCanvas.getContext('2d');
         
