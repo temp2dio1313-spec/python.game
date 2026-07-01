@@ -137,7 +137,7 @@
         /* ステージ2：分岐用インデント */
         .indent-action { margin-left: 20px; background-color: #f0fdf4; border-left-color: #10b981; }
 
-        /* ステージ3：反復用デザイン（開始と終了の特殊枠、および中身のインデント） */
+        /* ステージ3：反復用デザイン */
         .loop-start-item { margin-left: 15px; background-color: #fdf2f8; border-left: 6px double #ec4899; border-radius: 6px 6px 0 0; font-weight: bold; color: #be185d; }
         .loop-end-item { margin-left: 15px; background-color: #fdf2f8; border-left: 6px double #ec4899; border-radius: 0 0 6px 6px; font-weight: bold; color: #be185d; }
         .loop-inner-item { margin-left: 35px; background-color: #faf5ff; border-left: 4px solid #8b5cf6; }
@@ -220,7 +220,7 @@
         // シナリオスクリプト
         const startScripts = [
             "こんにちは！ここではPythonっていうプログラミング言語を学んでいくよ",
-            "Pythonっていうのは、本来なら0と1で表されるコンピュータ言語を、人間が分かりやすく、構築しやすいように設計された、英語と記号でできた言語なんだ！",
+            "Pythonっていうのは、本来なら0と1で表されるコンピュータ言語を、人間が分かりやすく、構築しやすいように設計された、英語と記号でできた言語んだ！",
             "ifやelse、printなど、聞いたことがあるような英単語で作ることができる言語だから、怖がらずに学んでいこう！",
             "情報Ⅰで用いるPythonの勉強には、『コマンドを覚える』というよりかは、『流れを意識する』ことが大切になってくるんだ",
             "そのためにまずは、プログラミングの基本3構造について学んでいこう！",
@@ -240,7 +240,7 @@
             "「もし〜ならA、そうでなければB」という風に条件で進むルートを変える仕組みを『分岐構造』というんだ！それじゃ最後に行ってみよう！"
         ];
         const stage3StartScripts = [
-            "最後は『反復構造』について学んでいくよ！",
+            "最後は『反復構造』について学んでしていくよ！",
             "今度はアバターに『情報Ⅰ』という言葉をぴったり10回作らせてほしいんだ！",
             "同じ命令を何度も並べるのは大変だけど、反復パーツを使えばすっきりまとめられるよ。挑戦してみてね！"
         ];
@@ -378,30 +378,51 @@
             if (blinkFlag) {
                 ctx.beginPath(); ctx.arc(eyeLX, eyeY + 1, 3, Math.PI, 0, false); ctx.stroke(); ctx.beginPath(); ctx.arc(eyeRX, eyeY + 1, 3, Math.PI, 0, false); ctx.stroke();
             } else {
-                ctx.fillStyle = '#4a5568'; ctx.beginPath(); ctx.arc(eyeLX, eyeY, 2.5, 0, Math.PI * 2); ctx.arc(eyeRX, eyeY, 2.5, 0, Math.PI * 2); fill();
+                ctx.fillStyle = '#4a5568'; ctx.beginPath(); ctx.arc(eyeLX, eyeY, 2.5, 0, Math.PI * 2); ctx.arc(eyeRX, eyeY, 2.5, 0, Math.PI * 2); ctx.fill();
             }
         }
 
+        // 常時稼働する描画アニメーションシステム（実行中も絶対にアバターを描画し続ける）
         function updateAnimation() {
             blinkTimer++; isBlinking = (blinkTimer % 200 < 12);
-            if (currentStage === 1 && currentCtx && currentCanvas) drawAvatarSpec(currentCtx, currentCanvas.width, currentCanvas.height, robot.dir, isBlinking);
-            if (talkCtx && talkCanvas) drawAvatarSpec(talkCtx, talkCanvas.width, talkCanvas.height, 1, isBlinking);
             
+            // ステージ1のアバター
+            if (currentStage === 1 && currentCtx && currentCanvas) {
+                drawAvatarSpec(currentCtx, currentCanvas.width, currentCanvas.height, robot.dir, isBlinking);
+            }
+            
+            // チュートリアル用のトップアバター
+            if (talkCtx && talkCanvas) {
+                drawAvatarSpec(talkCtx, talkCanvas.width, talkCanvas.height, 1, isBlinking);
+            }
+            
+            // ステージ2のコンベアアバター
             if (currentStage === 2 && conveyorCtx && conveyorCanvas) {
-                conveyorCtx.clearRect(0, 0, 316, 316); conveyorCtx.save(); conveyorCtx.translate(128, 90); drawAvatarSpec(conveyorCtx, 60, 60, 1, isBlinking); conveyorCtx.restore();
+                conveyorCtx.clearRect(0, 0, 316, 316); 
+                conveyorCtx.save(); 
+                conveyorCtx.translate(128, 90); 
+                drawAvatarSpec(conveyorCtx, 60, 60, 1, isBlinking); 
+                conveyorCtx.restore();
+                
                 if (isRunning && remainingBalls > 0) {
                     conveyorCtx.beginPath(); conveyorCtx.arc(ballX, ballY, 12, 0, Math.PI * 2); conveyorCtx.fillStyle = currentBallColor === "red" ? "#ef4444" : "#3b82f6"; conveyorCtx.fill();
                 }
             }
+            
+            // ★ステージ3の工場アバター（実行中のクリア崩れを防ぐためにロジックを完全保護）
             if (currentStage === 3 && factoryCtx && factoryCanvas) {
-                factoryCtx.clearRect(0, 0, 316, 60); factoryCtx.save(); factoryCtx.translate(128, 0); drawAvatarSpec(factoryCtx, 60, 60, 1, isBlinking); factoryCtx.restore();
+                factoryCtx.clearRect(0, 0, 316, 60); 
+                factoryCtx.save(); 
+                factoryCtx.translate(128, 0); 
+                drawAvatarSpec(factoryCtx, 60, 60, 1, isBlinking); 
+                factoryCtx.restore();
             }
+            
             requestAnimationFrame(updateAnimation);
         }
 
         function addCommand(cmdText) { if (isRunning) return; commands.push(cmdText); updateCommandList(); }
         
-        // 命令リスト・およびループ結合線のインテリジェントレンダリング
         function updateCommandList() {
             const listEl = document.getElementById('commandList'); listEl.innerHTML = '';
             const loopLineEl = document.getElementById('loopLine');
@@ -415,26 +436,22 @@
                 item.id = `cmd-${index}`; 
                 item.innerText = `${index + 1}: ${cmd}`;
                 
-                // 【ステージ2】分岐インデント
                 if (currentStage === 2 && (cmd === "左に入れる" || cmd === "右に入れる")) {
                     item.classList.add('indent-action');
                 }
                 
-                // 【ステージ3】反復スコープの装飾とインデント
                 if (currentStage === 3) {
                     if (cmd === "ここから反復") {
                         item.classList.add('loop-start-item');
                     } else if (cmd === "ここまで反復") {
                         item.classList.add('loop-end-item');
                     } else if (startIdx !== -1 && endIdx !== -1 && index > startIdx && index < endIdx) {
-                        // 開始と終了の間に挟まれている中身パーツ
                         item.classList.add('loop-inner-item');
                     }
                 }
                 listEl.appendChild(item);
             });
 
-            // 反復パーツが揃っている場合に「物理結合線」のサイズと位置を計算して表示
             if (currentStage === 3 && startIdx !== -1 && endIdx !== -1 && startIdx < endIdx) {
                 setTimeout(() => {
                     const startEl = document.getElementById(`cmd-${startIdx}`);
@@ -442,7 +459,7 @@
                     if (startEl && endEl) {
                         const topPos = startEl.offsetTop + (startEl.offsetHeight / 2);
                         const bottomPos = endEl.offsetTop + (endEl.offsetHeight / 2);
-                        loopLineEl.style.top = `${topPos + 10}px`; // パディング調整
+                        loopLineEl.style.top = `${topPos + 10}px`;
                         loopLineEl.style.height = `${bottomPos - topPos}px`;
                         loopLineEl.style.display = 'block';
                     }
@@ -530,7 +547,6 @@
                 let innerCommands = commands.slice(loopStartIndex + 1, loopEndIndex);
                 if(innerCommands.length === 0) { alert("エラー：反復ブロックの中身が空っぽです！"); isRunning = false; return; }
 
-                // ★ループ実行の開始に合わせて「接続線」をド派手にアクティブ化（ピンクに発光）
                 const loopLineEl = document.getElementById('loopLine');
                 if (loopLineEl) loopLineEl.classList.add('loop-line-active');
 
@@ -567,7 +583,6 @@
                     if (endRow) endRow.classList.remove('active-cmd');
                 }
 
-                // ループがすべて終わったら発光ラインを元に戻す
                 if (loopLineEl) loopLineEl.classList.remove('loop-line-active');
 
                 if (createdWordCount === 10 && textBuffer === "") {
