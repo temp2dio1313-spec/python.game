@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>アルゴリズム学習シミュレーター</title>
+    <title>アルゴリズム学習シミュレーター（アバター版）</title>
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -46,11 +46,16 @@
         }
         .wall { background-color: #7f8c8d; }
         .goal { background-color: #ffeaa7; }
-        .robot {
-            font-size: 14px;
-            font-weight: bold;
-            color: #0984e3;
+        
+        /* アバター描画用のCanvas */
+        .avatar-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 60px;
+            height: 60px;
         }
+
         /* コントロールパネル */
         .control-panel {
             display: flex;
@@ -123,7 +128,7 @@
 <body>
 
     <h1>アルゴリズム学習シミュレーター</h1>
-    <p>命令を順番に並べて、ロボットを目的地（GOAL）まで導くプログラムを作成してください。</p>
+    <p>命令を順番に並べて、丸いアバターを目的地（GOAL）まで導くプログラムを作成してください。</p>
 
     <div class="container">
         <div id="map"></div>
@@ -150,30 +155,13 @@
         <h2>このシステムで学ぶプログラミングの核心</h2>
         <hr>
         
-        <h3>1. プログラムの基本三構造「順次処理」</h3>
-        <p>あなたが「命令の追加」ボタンを押すと、右側のリストに上から順番に命令が積み重なります。「プログラムを実行」ボタンを押したとき、コンピュータは内部の配列から命令を一つずつ取り出し、<strong>上の行から下の行へ向かって順番に実行</strong>していきます。これをプログラミングの基本構造の一つである<strong>順次処理</strong>と呼びます。</p>
-
-        <h3>2. データの保持と「変数」</h3>
-        <p>ロボットが今どこにいて、どちらを向いているか、コンピュータは「変数」という箱に記憶しています。このプログラムの裏側では、以下のようなオブジェクト（変数の塊）が常に書き換えられています。</p>
-        <pre><span class="code-keyword">let</span> robot = {
-    x: 0,    <span class="code-comment">// ロボットの横の位置（0から4）</span>
-    y: 0,    <span class="code-comment">// ロボットの縦の位置（0から4）</span>
-    dir: 0   <span class="code-comment">// ロボットの向き（0:右、1:下、2:左、3:上）</span>
-};</pre>
-        <p>「右を向く」という命令が実行されると、内部では <code>robot.dir = (robot.dir + 1) % 4</code> という計算が行われ、変数の中身が書き換わります（代入）。画面の表示が切り替わるのは、コンピュータがこの変数の中身を読み取って、一瞬で画面を描き直しているからです。</p>
-
-        <h3>3. 進入禁止を判断する「条件分岐」</h3>
-        <p>ロボットが前進しようとしたとき、目の前が壁（灰色のマス）だったり、画面の外だったりした場合は進めません。これを制御しているのが<strong>条件分岐（if文）</strong>です。</p>
-        <pre><span class="code-keyword">if</span> (次の位置がマップの範囲内である <span class="code-keyword">&&</span> 次の位置が壁ではない) {
-    実際に座標を書き換えて前進する;
-} <span class="code-keyword">else</span> {
-    前進せずにその場にとどまる（エラーを防ぐ）;
-}</pre>
-        <p>この「もし〜なら処理する、そうでなければ処理しない」というロジックは、Pythonなどのテキストプログラミングでも全く同じ考え方で記述します。</p>
+        <h3>4. ループ処理によるアニメーション（新しい概念）</h3>
+        <p>アバターが「一定時間ごとに勝手に瞬きをする」という動きは、プログラミングの<strong>定期実行（ループ処理）</strong>によって実現しています。JavaScriptの <code>requestAnimationFrame</code> という関数を使い、1秒間に約60回、画面を高速で描き直しています。</p>
+        <p>「今、何フレーム目か」を変数でカウントし、特定の周期が来たら「目を閉じる計算」に切り替えることで、生き物のような自然な瞬きをシミュレートしています。このように、ゲームの滑らかな動きもすべて算術と条件分岐の組み合わせでできています。</p>
     </div>
 
     <script>
-        // 5x5 二次元配列によるマップデータ (0:通路, 1:壁, 2:ゴール)
+        // 5x5 マップデータ
         const mapData = [
             [0, 0, 0, 0, 0],
             [1, 1, 0, 1, 0],
@@ -182,17 +170,26 @@
             [0, 0, 0, 0, 2]
         ];
 
-        // ロボットの状態管理用オブジェクト
-        let robot = { x: 0, y: 0, dir: 0 }; 
-        const dirLabels = ["ロボット(右)", "ロボット(下)", "ロボット(左)", "ロボット(上)"];
-        
+        // アバターの状態
+        let robot = { x: 0, y: 0, dir: 0 }; // 0:右, 1:下, 2:左, 3:上
         let commands = [];
         let isRunning = false;
 
-        // 二次元配列を元にHTMLのグリッドマップを描画する関数
+        // アバターのアニメーション用変数
+        let blinkTimer = 0;
+        let isBlinking = false;
+        let currentCanvas = null;
+        let currentCtx = null;
+
+        // マップの描画
         function drawMap() {
             const mapElement = document.getElementById('map');
             mapElement.innerHTML = '';
+            
+            // 古いCanvasの参照をクリア
+            currentCanvas = null;
+            currentCtx = null;
+
             for (let y = 0; y < 5; y++) {
                 for (let x = 0; x < 5; x++) {
                     const cell = document.createElement('div');
@@ -202,23 +199,100 @@
                         cell.classList.add('goal');
                         cell.innerText = 'GOAL';
                     }
-                    // ロボットの現在座標と一致した場合の描画処理
+                    
+                    // アバターの現在位置にCanvasを配置
                     if (robot.x === x && robot.y === y) {
-                        cell.innerHTML = `<span class="robot">${dirLabels[robot.dir]}</span>`;
+                        const canvas = document.createElement('canvas');
+                        canvas.width = 60;
+                        canvas.height = 60;
+                        canvas.classList.add('avatar-canvas');
+                        cell.appendChild(canvas);
+                        
+                        currentCanvas = canvas;
+                        currentCtx = canvas.getContext('2d');
                     }
                     mapElement.appendChild(cell);
                 }
             }
         }
 
-        // 命令を配列に格納する関数
+        // アバターをCanvasに描画するメインループ（1秒間に60回実行）
+        function updateAnimation() {
+            blinkTimer++;
+            
+            // 約3秒（180フレーム）に1回、10フレームだけ目を閉じる
+            if (blinkTimer % 180 < 10) {
+                isBlinking = true;
+            } else {
+                isBlinking = false;
+            }
+
+            if (currentCtx && currentCanvas) {
+                const ctx = currentCtx;
+                const w = currentCanvas.width;
+                const h = currentCanvas.height;
+                
+                // 画面クリア
+                ctx.clearRect(0, 0, w, h);
+
+                // 1. 体（丸いアバター）の描画
+                ctx.beginPath();
+                ctx.arc(w / 2, h / 2, 22, 0, Math.PI * 2);
+                ctx.fillStyle = '#0984e3'; // 青色
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#025aa5';
+                ctx.stroke();
+
+                // 2. 向きを示すインジケータ（小さな突起）
+                ctx.beginPath();
+                ctx.fillStyle = '#ffffff';
+                let angle = robot.dir * (Math.PI / 2); // 0, 90, 180, 270度
+                let pointerX = w / 2 + Math.cos(angle) * 16;
+                let pointerY = h / 2 + Math.sin(angle) * 16;
+                ctx.arc(pointerX, pointerY, 4, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 3. 目の描画（向きに応じて位置を少しずらす）
+                let offsetX = Math.cos(angle) * 3;
+                let offsetY = Math.sin(angle) * 3;
+                let eyeLX = w / 2 - 7 + offsetX;
+                let eyeRX = w / 2 + 7 + offsetX;
+                let eyeY = h / 2 - 2 + offsetY;
+
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 3;
+                ctx.lineCap = 'round';
+
+                if (isBlinking) {
+                    // まばたき（横線）
+                    ctx.beginPath();
+                    ctx.moveTo(eyeLX - 4, eyeY);
+                    ctx.lineTo(eyeLX + 4, eyeY);
+                    ctx.moveTo(eyeRX - 4, eyeY);
+                    ctx.lineTo(eyeRX + 4, eyeY);
+                    ctx.stroke();
+                } else {
+                    // 通常の目（縦長の楕円形、または丸）
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(eyeLX, eyeY, 3, 0, Math.PI * 2);
+                    ctx.arc(eyeRX, eyeY, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            requestAnimationFrame(updateAnimation);
+        }
+
+        // 命令を配列に格納
         function addCommand(cmdText) {
             if (isRunning) return;
             commands.push(cmdText);
             updateCommandList();
         }
 
-        // 命令配列の中身を画面のリスト表示に反映する関数
+        // 命令配列を画面リストに反映
         function updateCommandList() {
             const listEl = document.getElementById('commandList');
             listEl.innerHTML = '';
@@ -231,7 +305,7 @@
             });
         }
 
-        // 状態を初期化する関数
+        // リセット
         function clearCommands() {
             if (isRunning) return;
             commands = [];
@@ -240,7 +314,7 @@
             drawMap();
         }
 
-        // 命令配列を上から順に読み込んで実行する非同期関数（ループ・順次処理の実装）
+        // プログラムの実行
         async function runProgram() {
             if (isRunning || commands.length === 0) return;
             isRunning = true;
@@ -249,11 +323,9 @@
             drawMap();
 
             for (let i = 0; i < commands.length; i++) {
-                // 現在実行中の命令を行ハイライトで示す処理
                 const currentCmdRow = document.getElementById(`cmd-${i}`);
                 if (currentCmdRow) currentCmdRow.classList.add('active-cmd');
 
-                // 800ミリ秒（0.8秒）のウェイトを挟むことで動作を視覚化
                 await new Promise(resolve => setTimeout(resolve, 800));
 
                 const cmd = commands[i];
@@ -268,7 +340,6 @@
                 drawMap();
                 if (currentCmdRow) currentCmdRow.classList.remove('active-cmd');
 
-                // 毎ステップごとのゴール判定
                 if (mapData[robot.y][robot.x] === 2) {
                     alert('クリア：目的地に到達しました。正しいアルゴリズムが構築できています。');
                     isRunning = false;
@@ -276,24 +347,22 @@
                 }
             }
 
-            // すべての命令を実行し終えた後の最終判定
             if (mapData[robot.y][robot.x] !== 2) {
                 alert('失敗：目的地に到達できませんでした。命令の順番を見直してください。');
             }
             isRunning = false;
         }
 
-        // 進行方向の座標計算と境界値・壁判定（条件分岐の実装）
+        // 前進処理
         function moveForward() {
             let nextX = robot.x;
             let nextY = robot.y;
 
-            if (robot.dir === 0) nextX++; // 右へ進む
-            if (robot.dir === 1) nextY++; // 下へ進む
-            if (robot.dir === 2) nextX--; // 左へ進む
-            if (robot.dir === 3) nextY--; // 上へ進む
+            if (robot.dir === 0) nextX++;
+            if (robot.dir === 1) nextY++;
+            if (robot.dir === 2) nextX--;
+            if (robot.dir === 3) nextY--;
 
-            // 配列の範囲内（0から4）かつ、壁（1）ではない場合のみ座標を更新する
             if (nextX >= 0 && nextX < 5 && nextY >= 0 && nextY < 5) {
                 if (mapData[nextY][nextX] !== 1) {
                     robot.x = nextX;
@@ -302,8 +371,9 @@
             }
         }
 
-        // 初期描画の実行
+        // 初回起動処理
         drawMap();
+        updateAnimation(); // アニメーションループの開始
     </script>
 </body>
 </html>
